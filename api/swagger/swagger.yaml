@@ -9,6 +9,13 @@ definitions:
       title:
         type: string
     type: object
+  service.CreateCourseInput:
+    properties:
+      description:
+        type: string
+      title:
+        type: string
+    type: object
   v1.response:
     properties:
       message:
@@ -21,6 +28,34 @@ info:
   title: Course Watch API
   version: "1.0"
 paths:
+  /courses/:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new Course entity
+      parameters:
+      - description: sign up info
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/service.CreateCourseInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: The generated id is returned in Location header
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/v1.response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/v1.response'
+      summary: Creates a new Course entity
+      tags:
+      - courses
   /courses/{id}:
     get:
       consumes:

@@ -7,6 +7,7 @@ import (
 
 type Courses interface {
 	GetById(ctx context.Context, id string) (*core.Course, error)
+	Insert(ctx context.Context, course *core.Course) error
 }
 
 type Repositories struct {

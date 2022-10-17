@@ -5,6 +5,7 @@ import (
 	"github.com/zhuravlev-pe/course-watch/internal/repository/mockrepo"
 	"github.com/zhuravlev-pe/course-watch/internal/server"
 	"github.com/zhuravlev-pe/course-watch/internal/service"
+	"github.com/zhuravlev-pe/course-watch/pkg/idgen"
 	"log"
 )
 
@@ -29,9 +30,17 @@ import (
 
 // Run initializes whole application.
 func Run() {
+
+	//TODO: read nodeId from config
+	idGen, err := idgen.New(1)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	repos := mockrepo.New()
 	services := service.NewServices(service.Deps{
 		Repos: repos,
+		IdGen: idGen,
 	})
 	handler := http.NewHandler(services)
 

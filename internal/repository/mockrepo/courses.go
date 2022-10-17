@@ -23,3 +23,8 @@ func (c *courses) GetById(_ context.Context, id string) (*core.Course, error) {
 	}
 	return course, nil
 }
+
+func (c *courses) Insert(_ context.Context, course *core.Course) error {
+	c.data[course.Id] = course
+	return nil
+}
