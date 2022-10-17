@@ -29,6 +29,8 @@ func (h *Handler) Init() *gin.Engine {
 		c.String(http.StatusOK, "pong")
 	})
 
+	h.initAPI(router)
+
 	return router
 }
 

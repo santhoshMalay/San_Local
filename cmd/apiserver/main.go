@@ -1,7 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"github.com/zhuravlev-pe/course-watch/internal/apiserver"
+)
 
 func main() {
-	fmt.Println("Hello world")
+	apiserver.Run()
 }

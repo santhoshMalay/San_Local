@@ -7,6 +7,7 @@ import (
 
 type Handler struct {
 	services *service.Services
+	//TODO: logger
 }
 
 func NewHandler(services *service.Services) *Handler {
