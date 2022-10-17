@@ -2,6 +2,9 @@ package http
 
 import (
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
+	"github.com/zhuravlev-pe/course-watch/api/swagger"
 	v1 "github.com/zhuravlev-pe/course-watch/internal/delivery/http/v1"
 	"github.com/zhuravlev-pe/course-watch/internal/service"
 	"net/http"
@@ -24,6 +27,10 @@ func (h *Handler) Init() *gin.Engine {
 		gin.Recovery(),
 		gin.Logger(),
 	)
+
+	swagger.SwaggerInfo.Host = "localhost:8080"
+	// http://localhost:8080/swagger/index.html
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	router.GET("/ping", func(c *gin.Context) {
 		c.String(http.StatusOK, "pong")
