@@ -8,3 +8,7 @@ swag:
 build:
 	go mod download && CGO_ENABLED=0 go build -o ./.bin/apiserver ./cmd/apiserver
 
+.PHONY: gen
+gen:
+	mockgen -source=internal/delivery/http/auth.go -destination=internal/delivery/http/mocks/mock_auth.go
+

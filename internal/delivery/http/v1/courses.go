@@ -31,17 +31,17 @@ func (h *Handler) initCoursesRoutes(api *gin.RouterGroup) {
 func (h *Handler) getCourseById(c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
-		h.errorResponse(c, http.StatusBadRequest, "empty id param")
+		ErrorResponseString(c, http.StatusBadRequest, "empty id param")
 		return
 	}
 
 	course, err := h.services.Courses.GetById(c.Request.Context(), id)
 	if err != nil {
 		if err == repository.ErrNotFound {
-			h.errorResponse(c, http.StatusNotFound, err.Error())
+			ErrorResponse(c, http.StatusNotFound, err)
 			return
 		}
-		h.errorResponse(c, http.StatusInternalServerError, err.Error())
+		ErrorResponse(c, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -62,13 +62,13 @@ func (h *Handler) getCourseById(c *gin.Context) {
 func (h *Handler) create(c *gin.Context) {
 	var input service.CreateCourseInput
 	if err := c.BindJSON(&input); err != nil {
-		h.errorResponse(c, http.StatusBadRequest, "invalid input body")
+		ErrorResponseString(c, http.StatusBadRequest, "invalid input body")
 		return
 	}
 	course, err := h.services.Courses.Create(c.Request.Context(), input)
 	if err != nil {
 		//TODO: discriminate between validation errors, logic errors and internal server errors
-		h.errorResponse(c, http.StatusInternalServerError, err.Error())
+		ErrorResponse(c, http.StatusInternalServerError, err)
 		return
 	}
 	c.Header("Location", "/"+course.Id)
