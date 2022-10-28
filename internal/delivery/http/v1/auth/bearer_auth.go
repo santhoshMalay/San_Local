@@ -76,11 +76,12 @@ func (ba *BearerAuthenticator) Authorize(role security.Role) func(ctx *gin.Conte
 // (Forbidden) and a proper message and returns false. Handler method should call return in this case. Returns true
 // otherwise
 //
-//	func myHandler(ctx *gin.Context) {
-//	    if !EnsureAuthorizedUser(ctx, security.Admin) {
-//	        return
-//	    }
-//	}
+//		func myEndpoint(ctx *gin.Context) {
+//		    if !EnsureAuthorizedUser(ctx, security.Admin) {
+//		        return
+//		    }
+//	     // ... do admin stuff ...
+//		}
 func EnsureAuthorizedUser(ctx *gin.Context, role security.Role) bool {
 	up, err := GetAuthenticatedUser(ctx)
 	if err != nil {
