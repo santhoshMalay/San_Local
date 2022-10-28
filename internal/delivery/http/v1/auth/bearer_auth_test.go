@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	mockHttp "github.com/zhuravlev-pe/course-watch/internal/delivery/http/mocks"
 	"github.com/zhuravlev-pe/course-watch/pkg/security"
@@ -218,4 +219,115 @@ func TestGetAuthenticatedUser_NoMiddleware(t *testing.T) {
 	require.Equal(t, http.StatusOK, w.Code)
 	require.Equal(t, testData, w.Body.String())
 	require.True(t, endpointHit)
+}
+
+func TestEnsureAuthorizedUser_NoMiddleware(t *testing.T) {
+	ts := getTestSetup(t)
+
+	var runPastAuthorizeCheck bool
+	endpoint := func(context *gin.Context) {
+		if !EnsureAuthorizedUser(context, security.Admin) {
+			return
+		}
+
+		runPastAuthorizeCheck = true
+		context.String(http.StatusInternalServerError, "this text should not be returned")
+	}
+
+	g := ts.router.Group("/secure")
+	{
+		g.GET("/data", endpoint)
+	}
+
+	ts.bth.EXPECT().Parse(validToken).Times(0)
+
+	runPastAuthorizeCheck = false
+
+	w := httptest.NewRecorder()
+	req, _ := http.NewRequest(http.MethodGet, "/secure/data", nil)
+	req.Header.Add("Authorization", "Bearer "+validToken)
+
+	ts.router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusForbidden, w.Code)
+	assert.Equal(t, `{"message":"Forbidden. Required user role: admin"}`, w.Body.String())
+	assert.False(t, runPastAuthorizeCheck)
+}
+
+func TestBearerAuthenticator_Authorize(t *testing.T) {
+	ts := getTestSetup(t)
+
+	var endpointHit bool
+
+	g := ts.router.Group("/secure", ts.ba.Authorize(security.Admin))
+	g.GET("/data", func(context *gin.Context) {
+		endpointHit = true
+		context.String(http.StatusOK, testData)
+	})
+
+	cases := map[string]struct {
+		header             string
+		expectedParseInput string
+		userRoles          []security.Role
+		expectedParseError error
+		expectedStatusCode int
+		expectedBody       string
+	}{
+		"success": {
+			header:             "Bearer " + validToken,
+			expectedParseInput: validToken,
+			userRoles:          []security.Role{security.Student, security.Admin},
+			expectedParseError: nil,
+			expectedStatusCode: http.StatusOK,
+			expectedBody:       testData,
+		},
+		"authentication_failure": {
+			header:             "Bearer " + invalidToken,
+			expectedParseInput: invalidToken,
+			userRoles:          nil,
+			expectedParseError: errors.New("some parsing error"),
+			expectedStatusCode: http.StatusUnauthorized,
+			expectedBody:       unauthorizedMessageBody,
+		},
+		"required_role_missing": {
+			header:             "Bearer " + validToken,
+			expectedParseInput: validToken,
+			userRoles:          []security.Role{security.Student},
+			expectedParseError: nil,
+			expectedStatusCode: http.StatusForbidden,
+			expectedBody:       `{"message":"Forbidden. Required user role: admin"}`,
+		},
+	}
+
+	for name, c := range cases {
+		t.Run(name, func(t *testing.T) {
+			if c.expectedParseInput != "" {
+				if c.expectedParseError == nil {
+					payload := *referencePayload
+					payload.Roles = c.userRoles
+					ts.bth.EXPECT().Parse(c.expectedParseInput).Times(1).Return(&payload, nil)
+				} else {
+					ts.bth.EXPECT().Parse(c.expectedParseInput).Times(1).Return(nil, c.expectedParseError)
+				}
+			}
+
+			endpointHit = false
+
+			w := httptest.NewRecorder()
+			req, _ := http.NewRequest(http.MethodGet, "/secure/data", nil)
+			if c.header != "" {
+				req.Header.Add("Authorization", c.header)
+			}
+
+			ts.router.ServeHTTP(w, req)
+
+			assert.Equal(t, c.expectedStatusCode, w.Code)
+			assert.Equal(t, c.expectedBody, w.Body.String())
+			if c.expectedStatusCode == http.StatusOK {
+				assert.True(t, endpointHit)
+			} else {
+				assert.False(t, endpointHit)
+			}
+		})
+	}
 }
