@@ -10,5 +10,5 @@ build:
 
 .PHONY: gen
 gen:
-	mockgen -source=internal/delivery/http/auth.go -destination=internal/delivery/http/mocks/mock_auth.go
+	go generate ./...
 

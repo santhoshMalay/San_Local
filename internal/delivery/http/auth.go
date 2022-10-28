@@ -1,5 +1,7 @@
 package http
 
+//go:generate mockgen -source=$GOFILE -destination=mocks/mock_auth.go
+
 import "github.com/zhuravlev-pe/course-watch/pkg/security"
 
 // BearerTokenHandler represents a service for generating and validating security tokens used for bearer authentication
