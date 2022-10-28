@@ -4,8 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	deliveryHttp "github.com/zhuravlev-pe/course-watch/internal/delivery/http"
-	v1 "github.com/zhuravlev-pe/course-watch/internal/delivery/http/v1"
+	v1 "github.com/zhuravlev-pe/course-watch/internal/delivery/http/v1/utils"
 	"github.com/zhuravlev-pe/course-watch/pkg/security"
 	"net/http"
 	"strings"
@@ -14,10 +13,10 @@ import (
 const userKey = "user_principal"
 
 type BearerAuthenticator struct {
-	tokenHandler deliveryHttp.BearerTokenHandler
+	tokenHandler BearerTokenHandler
 }
 
-func NewBearerAuthenticator(tokenHandler deliveryHttp.BearerTokenHandler) *BearerAuthenticator {
+func NewBearerAuthenticator(tokenHandler BearerTokenHandler) *BearerAuthenticator {
 	return &BearerAuthenticator{tokenHandler: tokenHandler}
 }
 

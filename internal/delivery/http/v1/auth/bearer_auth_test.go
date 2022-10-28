@@ -6,7 +6,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	mockHttp "github.com/zhuravlev-pe/course-watch/internal/delivery/http/mocks"
+	mockAuth "github.com/zhuravlev-pe/course-watch/internal/delivery/http/v1/auth/mocks"
 	"github.com/zhuravlev-pe/course-watch/pkg/security"
 	"net/http"
 	"net/http/httptest"
@@ -15,7 +15,7 @@ import (
 
 type testSetup struct {
 	router *gin.Engine
-	bth    *mockHttp.MockBearerTokenHandler
+	bth    *mockAuth.MockBearerTokenHandler
 	ba     *BearerAuthenticator
 }
 
@@ -25,7 +25,7 @@ func getTestSetup(t *testing.T) *testSetup {
 
 	var ts testSetup
 
-	ts.bth = mockHttp.NewMockBearerTokenHandler(ctrl)
+	ts.bth = mockAuth.NewMockBearerTokenHandler(ctrl)
 	ts.ba = NewBearerAuthenticator(ts.bth)
 	ts.router = gin.New()
 
@@ -151,7 +151,7 @@ func TestBearerAuthenticator_Authenticate(t *testing.T) {
 func TestBearerAuthenticator_GenerateToken(t *testing.T) {
 	ctrl := gomock.NewController(t)
 
-	bth := mockHttp.NewMockBearerTokenHandler(ctrl)
+	bth := mockAuth.NewMockBearerTokenHandler(ctrl)
 	ba := NewBearerAuthenticator(bth)
 
 	bth.EXPECT().Generate(&referencePayload.UserPrincipal).Times(1).Return(validToken, nil)

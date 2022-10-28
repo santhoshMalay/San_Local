@@ -1,4 +1,4 @@
-package http
+package auth
 
 //go:generate mockgen -source=$GOFILE -destination=mocks/mock_auth.go
 

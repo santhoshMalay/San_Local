@@ -2,6 +2,7 @@ package v1
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/zhuravlev-pe/course-watch/internal/delivery/http/v1/utils"
 	"github.com/zhuravlev-pe/course-watch/internal/repository"
 	"github.com/zhuravlev-pe/course-watch/internal/service"
 	"net/http"
@@ -31,17 +32,17 @@ func (h *Handler) initCoursesRoutes(api *gin.RouterGroup) {
 func (h *Handler) getCourseById(c *gin.Context) {
 	id := c.Param("id")
 	if id == "" {
-		ErrorResponseString(c, http.StatusBadRequest, "empty id param")
+		utils.ErrorResponseString(c, http.StatusBadRequest, "empty id param")
 		return
 	}
 
 	course, err := h.services.Courses.GetById(c.Request.Context(), id)
 	if err != nil {
 		if err == repository.ErrNotFound {
-			ErrorResponse(c, http.StatusNotFound, err)
+			utils.ErrorResponse(c, http.StatusNotFound, err)
 			return
 		}
-		ErrorResponse(c, http.StatusInternalServerError, err)
+		utils.ErrorResponse(c, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -62,13 +63,13 @@ func (h *Handler) getCourseById(c *gin.Context) {
 func (h *Handler) create(c *gin.Context) {
 	var input service.CreateCourseInput
 	if err := c.BindJSON(&input); err != nil {
-		ErrorResponseString(c, http.StatusBadRequest, "invalid input body")
+		utils.ErrorResponseString(c, http.StatusBadRequest, "invalid input body")
 		return
 	}
 	course, err := h.services.Courses.Create(c.Request.Context(), input)
 	if err != nil {
 		//TODO: discriminate between validation errors, logic errors and internal server errors
-		ErrorResponse(c, http.StatusInternalServerError, err)
+		utils.ErrorResponse(c, http.StatusInternalServerError, err)
 		return
 	}
 	c.Header("Location", "/"+course.Id)

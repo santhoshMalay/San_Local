@@ -6,6 +6,7 @@ import (
 	"github.com/zhuravlev-pe/course-watch/internal/server"
 	"github.com/zhuravlev-pe/course-watch/internal/service"
 	"github.com/zhuravlev-pe/course-watch/pkg/idgen"
+	"github.com/zhuravlev-pe/course-watch/pkg/security"
 	"log"
 )
 
@@ -38,11 +39,15 @@ func Run() {
 	}
 
 	repos := mockrepo.New()
+
+	jwtHandler := security.NewJwtHandler()
+	// TODO: first config related task - configure jwtHandler
+
 	services := service.NewServices(service.Deps{
 		Repos: repos,
 		IdGen: idGen,
 	})
-	handler := http.NewHandler(services)
+	handler := http.NewHandler(services, jwtHandler)
 
 	srv := server.NewServer(handler.Init())
 

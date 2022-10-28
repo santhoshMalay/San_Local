@@ -7,6 +7,13 @@ files:
 `go install github.com/swaggo/swag/cmd/swag@latest`
 
 The initial version is built using swag v1.8.6
+
+In order to rebuild swagger files run:
+
+`swag init -g internal/apiserver/apiserver.go -o api/swagger`
+
+Alternatively, use `swag` target in the Makefile
+
 ### gomock
 
 `go install github.com/golang/mock/mockgen@v1.6.0`
