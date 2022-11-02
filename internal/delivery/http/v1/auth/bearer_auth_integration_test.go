@@ -145,7 +145,7 @@ func TestBearerAuthenticator_Integration_Authenticate(t *testing.T) {
 		expectedStatusCode   int
 		expectedErrorMessage string
 	}{
-		"success": {
+		"success_multiple_roles": {
 			loggedInUser: &security.UserPrincipal{
 				UserId: "12345678",
 				Roles:  []security.Role{security.Student, security.Admin},
@@ -169,7 +169,7 @@ func TestBearerAuthenticator_Integration_Authenticate(t *testing.T) {
 			expectedStatusCode:   http.StatusUnauthorized,
 			expectedErrorMessage: `{"message":"Unauthorized"}`,
 		},
-		"authorization_failure": {
+		"success_single_role": {
 			loggedInUser: &security.UserPrincipal{
 				UserId: "12345678",
 				Roles:  []security.Role{security.Student},

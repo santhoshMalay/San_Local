@@ -6,15 +6,11 @@ import (
 	"fmt"
 )
 
-// Role enumeration represents a set of available user roles
 type Role uint8
 
 const (
-	// UndefinedRole - invalid uninitialized role value
 	UndefinedRole Role = iota
-	// Student - student role
 	Student
-	// Admin - administrator role (full access)
 	Admin
 )
 

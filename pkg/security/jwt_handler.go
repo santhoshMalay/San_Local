@@ -72,7 +72,6 @@ func NewJwtHandler() *JwtHandler {
 	}
 }
 
-// Generate creates a new signed token
 func (jh *JwtHandler) Generate(principal *UserPrincipal) (string, error) {
 	btc := jh.generateClaims(principal)
 	return jh.generateSignedString(btc)
@@ -177,7 +176,6 @@ func (jh *JwtHandler) validateTimestamps(btc *bearerTokenClaims) error {
 	return vErr
 }
 
-// JwtPayload represents parsed contents of a JWT
 type JwtPayload struct {
 	UserPrincipal
 
