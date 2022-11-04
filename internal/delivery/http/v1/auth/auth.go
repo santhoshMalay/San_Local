@@ -1,0 +1,10 @@
+package auth
+
+//go:generate mockgen -source=$GOFILE -destination=mocks/mock_auth.go
+
+import "github.com/zhuravlev-pe/course-watch/pkg/security"
+
+type BearerTokenHandler interface {
+	Generate(principal *security.UserPrincipal) (string, error)
+	Parse(tokenString string) (*security.JwtPayload, error)
+}
