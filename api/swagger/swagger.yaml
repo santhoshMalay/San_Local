@@ -16,7 +16,7 @@ definitions:
       title:
         type: string
     type: object
-  v1.response:
+  utils.Response:
     properties:
       message:
         type: string
@@ -48,11 +48,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/v1.response'
+            $ref: '#/definitions/utils.Response'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/v1.response'
+            $ref: '#/definitions/utils.Response'
       summary: Creates a new Course entity
       tags:
       - courses
@@ -77,19 +77,19 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/v1.response'
+            $ref: '#/definitions/utils.Response'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/v1.response'
+            $ref: '#/definitions/utils.Response'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/v1.response'
+            $ref: '#/definitions/utils.Response'
         default:
           description: ""
           schema:
-            $ref: '#/definitions/v1.response'
+            $ref: '#/definitions/utils.Response'
       summary: Get Course By course id
       tags:
       - courses
