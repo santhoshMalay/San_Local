@@ -1,4 +1,4 @@
-package mockrepo
+package fake_repo
 
 import (
 	"context"

@@ -6,20 +6,19 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"github.com/zhuravlev-pe/course-watch/api/swagger"
 	v1 "github.com/zhuravlev-pe/course-watch/internal/delivery/http/v1"
-	"github.com/zhuravlev-pe/course-watch/internal/delivery/http/v1/auth"
 	"github.com/zhuravlev-pe/course-watch/internal/service"
 	"net/http"
 )
 
 type Handler struct {
 	services *service.Services
-	bearer   auth.BearerTokenHandler
+	bearer   v1.BearerAuthenticator
 }
 
-func NewHandler(services *service.Services, jwtHandler auth.BearerTokenHandler) *Handler {
+func NewHandler(services *service.Services, bearer v1.BearerAuthenticator) *Handler {
 	return &Handler{
 		services: services,
-		bearer:   jwtHandler,
+		bearer:   bearer,
 	}
 }
 

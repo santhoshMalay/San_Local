@@ -2,11 +2,11 @@ package apiserver
 
 import (
 	"github.com/zhuravlev-pe/course-watch/internal/delivery/http"
-	"github.com/zhuravlev-pe/course-watch/internal/repository/mockrepo"
+	"github.com/zhuravlev-pe/course-watch/internal/delivery/http/v1/fake_authenticator"
+	"github.com/zhuravlev-pe/course-watch/internal/repository/fake_repo"
 	"github.com/zhuravlev-pe/course-watch/internal/server"
 	"github.com/zhuravlev-pe/course-watch/internal/service"
 	"github.com/zhuravlev-pe/course-watch/pkg/idgen"
-	"github.com/zhuravlev-pe/course-watch/pkg/security"
 	"log"
 )
 
@@ -17,17 +17,11 @@ import (
 // @host localhost:8080
 // @BasePath /api/v1/
 
-// @securityDefinitions.apikey AdminAuth
-// @in header
-// @name Authorization
+// @tag.name User
+// @tag.description Managing user account
 
-// @securityDefinitions.apikey StudentsAuth
-// @in header
-// @name Authorization
-
-// @securityDefinitions.apikey UsersAuth
-// @in header
-// @name Authorization
+// @tag.name courses
+// @tag.description Temporary endpoints for Swagger demo. To be removed
 
 // Run initializes whole application.
 func Run() {
@@ -38,16 +32,18 @@ func Run() {
 		log.Fatal(err)
 	}
 
-	repos := mockrepo.New()
+	repos := fake_repo.New()
 
-	jwtHandler := security.NewJwtHandler()
+	//jwtHandler := security.NewJwtHandler()
 	// TODO: first config related task - configure jwtHandler
+
+	fakeBearerAuth := fake_authenticator.New() // to be able to test /user endpoints without logging in
 
 	services := service.NewServices(service.Deps{
 		Repos: repos,
 		IdGen: idGen,
 	})
-	handler := http.NewHandler(services, jwtHandler)
+	handler := http.NewHandler(services, fakeBearerAuth)
 
 	srv := server.NewServer(handler.Init())
 
