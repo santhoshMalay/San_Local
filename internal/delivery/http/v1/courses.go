@@ -25,9 +25,9 @@ func (h *Handler) initCoursesRoutes(api *gin.RouterGroup) {
 // @Produce  json
 // @Param id path string true "course id"
 // @Success 200 {object} core.Course
-// @Failure 400,404 {object} response
-// @Failure 500 {object} response
-// @Failure default {object} response
+// @Failure 400,404 {object} utils.Response
+// @Failure 500 {object} utils.Response
+// @Failure default {object} utils.Response
 // @Router /courses/{id} [get]
 func (h *Handler) getCourseById(c *gin.Context) {
 	id := c.Param("id")
@@ -57,8 +57,8 @@ func (h *Handler) getCourseById(c *gin.Context) {
 // @Produce  json
 // @Param input body service.CreateCourseInput true "sign up info"
 // @Success 201 "The generated id is returned in Location header"
-// @Failure 400 {object} response
-// @Failure 500 {object} response
+// @Failure 400 {object} utils.Response
+// @Failure 500 {object} utils.Response
 // @Router /courses/ [post]
 func (h *Handler) create(c *gin.Context) {
 	var input service.CreateCourseInput

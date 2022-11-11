@@ -16,7 +16,35 @@ definitions:
       title:
         type: string
     type: object
-  v1.response:
+  service.GetUserInfoOutput:
+    properties:
+      display_name:
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      id:
+        type: string
+      last_name:
+        type: string
+      registration_date:
+        type: string
+      roles:
+        items:
+          type: integer
+        type: array
+    type: object
+  service.UpdateUserInfoInput:
+    properties:
+      display_name:
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+    type: object
+  utils.Response:
     properties:
       message:
         type: string
@@ -48,11 +76,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/v1.response'
+            $ref: '#/definitions/utils.Response'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/v1.response'
+            $ref: '#/definitions/utils.Response'
       summary: Creates a new Course entity
       tags:
       - courses
@@ -77,33 +105,101 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/v1.response'
+            $ref: '#/definitions/utils.Response'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/v1.response'
+            $ref: '#/definitions/utils.Response'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/v1.response'
+            $ref: '#/definitions/utils.Response'
         default:
           description: ""
           schema:
-            $ref: '#/definitions/v1.response'
+            $ref: '#/definitions/utils.Response'
       summary: Get Course By course id
       tags:
       - courses
-securityDefinitions:
-  AdminAuth:
-    in: header
-    name: Authorization
-    type: apiKey
-  StudentsAuth:
-    in: header
-    name: Authorization
-    type: apiKey
-  UsersAuth:
-    in: header
-    name: Authorization
-    type: apiKey
+  /user/:
+    get:
+      consumes:
+      - application/json
+      description: returns info on the currently logged-in user. User_id is extracted
+        from the bearer token
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/service.GetUserInfoOutput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Retrieve current user data
+      tags:
+      - User
+    put:
+      consumes:
+      - application/json
+      description: modifies user info for the currently logged-in user. User_id is
+        extracted from the bearer token
+      parameters:
+      - description: user info
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/service.UpdateUserInfoInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Modify current user data
+      tags:
+      - User
 swagger: "2.0"
+tags:
+- description: Managing user account
+  name: User
+- description: Temporary endpoints for Swagger demo. To be removed
+  name: courses
