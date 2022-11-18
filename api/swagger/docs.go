@@ -16,6 +16,41 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/auth": {
+            "post": {
+                "description": "Creates new user with the given detials",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "New user signup",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/service.LoginInput"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/courses/": {
             "post": {
                 "description": "Creates a new Course entity",
@@ -283,6 +318,20 @@ const docTemplate = `{
                 }
             }
         },
+        "service.LoginInput": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "persistent": {
+                    "type": "boolean"
+                }
+            }
+        },
         "service.UpdateUserInfoInput": {
             "type": "object",
             "properties": {
@@ -314,6 +363,10 @@ const docTemplate = `{
         {
             "description": "Temporary endpoints for Swagger demo. To be removed",
             "name": "courses"
+        },
+        {
+            "description": "Login, logout and other security related operations",
+            "name": "Authentication"
         }
     ]
 }`

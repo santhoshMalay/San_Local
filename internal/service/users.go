@@ -2,8 +2,11 @@ package service
 
 import (
 	"context"
+
+	"github.com/zhuravlev-pe/course-watch/internal/core"
 	"github.com/zhuravlev-pe/course-watch/internal/repository"
 	"github.com/zhuravlev-pe/course-watch/pkg/idgen"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type usersService struct {
@@ -38,6 +41,32 @@ func (u *usersService) UpdateUserInfo(ctx context.Context, id string, input *Upd
 	upd.LastName = input.LastName
 	upd.DisplayName = input.DisplayName
 	return u.repo.Update(ctx, id, &upd)
+}
+
+func (u *usersService) Login(ctx context.Context, input *LoginInput) (*core.User, error) {
+	user, err := u.repo.GetByEmail(ctx, input.Email)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := bcrypt.CompareHashAndPassword(user.HashedPassword, []byte(input.Password)); err != nil {
+		return nil, err
+	}
+	return user, nil
+}
+
+func (u *usersService) Signup(ctx context.Context, input *SignupInput) error {
+	// user, err := u.repo.GetByEmail(ctx, input.Email)
+	// if err != nil {
+	// 	//User doesn't exist amd proceed with new user creation
+	// 	return err
+	// }
+
+	// if err := bcrypt.CompareHashAndPassword(user.HashedPassword, []byte(input.password)); err != nil {
+	// 	return nil, err
+	// }
+	//return user, nil
+	return nil
 }
 
 func newUsersService(repo repository.Users, idGen *idgen.IdGen) Users {

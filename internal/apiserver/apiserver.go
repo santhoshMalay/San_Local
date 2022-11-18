@@ -1,13 +1,14 @@
 package apiserver
 
 import (
+	"log"
+
 	"github.com/zhuravlev-pe/course-watch/internal/delivery/http"
 	"github.com/zhuravlev-pe/course-watch/internal/delivery/http/v1/fake_authenticator"
 	"github.com/zhuravlev-pe/course-watch/internal/repository/fake_repo"
 	"github.com/zhuravlev-pe/course-watch/internal/server"
 	"github.com/zhuravlev-pe/course-watch/internal/service"
 	"github.com/zhuravlev-pe/course-watch/pkg/idgen"
-	"log"
 )
 
 // @title Course Watch API
@@ -23,6 +24,8 @@ import (
 // @tag.name courses
 // @tag.description Temporary endpoints for Swagger demo. To be removed
 
+// @tag.name Authentication
+// @tag.description Login, logout and other security related operations
 // Run initializes whole application.
 func Run() {
 

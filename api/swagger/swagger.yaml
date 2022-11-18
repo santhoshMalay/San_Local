@@ -35,6 +35,15 @@ definitions:
           type: integer
         type: array
     type: object
+  service.LoginInput:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+      persistent:
+        type: boolean
+    type: object
   service.UpdateUserInfoInput:
     properties:
       display_name:
@@ -56,6 +65,29 @@ info:
   title: Course Watch API
   version: "1.0"
 paths:
+  /auth:
+    post:
+      consumes:
+      - application/json
+      description: Creates new user with the given detials
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/service.LoginInput'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: New user signup
+      tags:
+      - Authentication
   /courses/:
     post:
       consumes:
@@ -203,3 +235,5 @@ tags:
   name: User
 - description: Temporary endpoints for Swagger demo. To be removed
   name: courses
+- description: Login, logout and other security related operations
+  name: Authentication
