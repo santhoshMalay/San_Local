@@ -55,17 +55,27 @@ func (u *usersService) Login(ctx context.Context, input *LoginInput) (*core.User
 	return user, nil
 }
 
-func (u *usersService) Signup(ctx context.Context, input *SignupInput) error {
-	// user, err := u.repo.GetByEmail(ctx, input.Email)
-	// if err != nil {
-	// 	//User doesn't exist amd proceed with new user creation
-	// 	return err
-	// }
+func (u *usersService) Signup(ctx context.Context, input *SignupUserInput) error {
+	user, err := u.repo.GetByEmail(ctx, input.Email)
+	if err != nil {
+		return err
+	}
 
-	// if err := bcrypt.CompareHashAndPassword(user.HashedPassword, []byte(input.password)); err != nil {
-	// 	return nil, err
-	// }
-	//return user, nil
+	if user.Email == input.Email {
+		return err
+	}
+
+	user = &core.User{
+		Id:          u.idGen.Generate(),
+		Email:       input.Email,
+		FirstName:   input.FirstName,
+		LastName:    input.LastName,
+		DisplayName: input.DisplayName,
+	}
+
+	if err := u.repo.Insert(ctx, user); err != nil {
+		return err
+	}
 	return nil
 }
 

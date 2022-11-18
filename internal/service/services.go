@@ -42,7 +42,7 @@ type LoginInput struct {
 	Persistent bool   `json:"persistent"`
 }
 
-type SignupInput struct {
+type SignupUserInput struct {
 	Email       string `json:"email"`
 	Password    string `json:"password"`
 	FirstName   string `json:"first_name"`
@@ -60,7 +60,7 @@ type Users interface {
 	GetUserInfo(ctx context.Context, id string) (*GetUserInfoOutput, error)
 	UpdateUserInfo(ctx context.Context, id string, input *UpdateUserInfoInput) error
 	Login(ctx context.Context, input *LoginInput) (*core.User, error)
-	Signup(ctx context.Context, input *SignupInput) error
+	Signup(ctx context.Context, input *SignupUserInput) error
 }
 
 type Services struct {
