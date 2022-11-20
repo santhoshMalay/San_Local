@@ -40,35 +40,36 @@ var signingMethod = jwt.SigningMethodHS256
 
 type JwtHandler struct {
 	parser *jwt.Parser
-
+	
 	// Issuer of the token (authority). Will be set in generated token and checked in parsed token
 	// Must be set to a non-empty value to generate a valid token
 	Issuer string
-
+	
 	// AudienceExpected defines which audience must be present in parsed token during validation
 	AudienceExpected string
-
+	
 	// AudienceGenerated defines the audience claim value in generated tokens
 	// Must be set to a non-empty array to generate a valid token
 	AudienceGenerated []string
-
+	
 	// TokenTtl defines expiration time for generated tokens
 	TokenTtl time.Duration
-
+	
 	// TODO: implement expiration validation with clock skew
 	//ClockSkew time.Duration
-
+	
 	// SigningKey defines the key to be used for signing generated tokens and verifying parsed tokens
 	SigningKey []byte
 }
 
 const defaultTokenTtl = time.Hour * 1
 
-func NewJwtHandler() *JwtHandler {
+func NewJwtHandler(signingKey []byte) *JwtHandler {
 	parser := jwt.NewParser(jwt.WithValidMethods([]string{signingMethod.Alg()}))
 	return &JwtHandler{
-		parser:   parser,
-		TokenTtl: defaultTokenTtl,
+		parser:     parser,
+		TokenTtl:   defaultTokenTtl,
+		SigningKey: signingKey,
 	}
 }
 
@@ -83,13 +84,13 @@ func (jh *JwtHandler) generateClaims(principal *UserPrincipal) *bearerTokenClaim
 	btc.Audience = jh.AudienceGenerated
 	btc.Subject = principal.UserId
 	btc.Roles = principal.Roles
-
+	
 	now := time.Now()
 	btc.IssuedAt = jwt.NewNumericDate(now)
 	btc.NotBefore = btc.IssuedAt
 	exp := now.Add(jh.TokenTtl)
 	btc.ExpiresAt = jwt.NewNumericDate(exp)
-
+	
 	return &btc
 }
 
@@ -147,7 +148,7 @@ func (jh *JwtHandler) validateClaims(btc *bearerTokenClaims) error {
 func (jh *JwtHandler) validateTimestamps(btc *bearerTokenClaims) error {
 	vErr := new(jwt.ValidationError)
 	now := jwt.TimeFunc()
-
+	
 	if !btc.VerifyExpiresAt(now, true) {
 		if btc.ExpiresAt != nil {
 			delta := now.Sub(btc.ExpiresAt.Time)
@@ -155,42 +156,42 @@ func (jh *JwtHandler) validateTimestamps(btc *bearerTokenClaims) error {
 		} else {
 			vErr.Inner = jwt.ErrTokenExpired
 		}
-
+		
 		vErr.Errors |= jwt.ValidationErrorExpired
 	}
-
+	
 	if !btc.VerifyIssuedAt(now, true) {
 		vErr.Inner = jwt.ErrTokenUsedBeforeIssued
 		vErr.Errors |= jwt.ValidationErrorIssuedAt
 	}
-
+	
 	if !btc.VerifyNotBefore(now, true) {
 		vErr.Inner = jwt.ErrTokenNotValidYet
 		vErr.Errors |= jwt.ValidationErrorNotValidYet
 	}
-
+	
 	if vErr.Errors == 0 {
 		return nil
 	}
-
+	
 	return vErr
 }
 
 type JwtPayload struct {
 	UserPrincipal
-
+	
 	// Issuer of the token (authority)
 	Issuer string
-
+	
 	// Audience of the token
 	Audience []string
-
+	
 	// ExpiresAt - the Expiration Time claim. See https://datatracker.ietf.org/doc/html/rfc7519#section-4.1.4
 	ExpiresAt time.Time
-
+	
 	// NotBefore - the Not Before claim. See https://datatracker.ietf.org/doc/html/rfc7519#section-4.1.5
 	NotBefore time.Time
-
+	
 	// IssuedAt - the Issued At claim. See https://datatracker.ietf.org/doc/html/rfc7519#section-4.1.6
 	IssuedAt time.Time
 }

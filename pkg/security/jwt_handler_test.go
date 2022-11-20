@@ -31,12 +31,11 @@ func TestBearerTokenClaims_IgnoresExpiration(t *testing.T) {
 }
 
 func getReferenceJwtHandler() *JwtHandler {
-	jh := NewJwtHandler()
+	jh := NewJwtHandler(testSigningKey)
 	jh.Issuer = testAuthority
 	jh.AudienceGenerated = []string{testAudience}
 	jh.AudienceExpected = testAudience
 	jh.TokenTtl = testTokenTtl
-	jh.SigningKey = testSigningKey
 	return jh
 }
 
@@ -57,11 +56,11 @@ func encodeSegment(bytes []byte) string {
 
 func decodeClaims(t *testing.T, tokenString string) *bearerTokenClaims {
 	t.Helper()
-
+	
 	parts := strings.Split(tokenString, ".")
 	require.Equal(t, 3, len(parts))
 	bytes := decodeSegment(t, parts[1])
-
+	
 	var btc bearerTokenClaims
 	err := json.Unmarshal(bytes, &btc)
 	require.NoError(t, err)
@@ -71,29 +70,29 @@ func decodeClaims(t *testing.T, tokenString string) *bearerTokenClaims {
 // returns a new token string with claims replaced by newClaims, without changing the signature
 func replaceClaims(t *testing.T, tokenString string, newClaims *bearerTokenClaims) string {
 	t.Helper()
-
+	
 	parts := strings.Split(tokenString, ".")
 	require.Equal(t, 3, len(parts))
-
+	
 	bytes, err := json.Marshal(newClaims)
 	require.NoError(t, err)
 	parts[1] = encodeSegment(bytes)
-
+	
 	return strings.Join(parts, ".")
 }
 
 func generateModifiedReferenceTokenString(t *testing.T, claimsModifier func(*bearerTokenClaims)) string {
 	t.Helper()
-
+	
 	jh := getReferenceJwtHandler()
 	up := getReferenceUser()
-
+	
 	// This is identical to JwtHandler.Generate(), but with claimsModifier() applied before signing the token
 	btc := jh.generateClaims(up)
 	claimsModifier(btc)
 	tokenString, err := jh.generateSignedString(btc)
 	require.NoError(t, err)
-
+	
 	return tokenString
 }
 
@@ -114,11 +113,11 @@ func offsetTimestamps(toAdd time.Duration) func(*bearerTokenClaims) {
 func TestTokenHandler_GenerateAndParseBack(t *testing.T) {
 	jh := getReferenceJwtHandler()
 	up := getReferenceUser()
-
+	
 	tokenString, err := jh.Generate(up)
 	require.NoError(t, err)
 	t.Log("Reference:", tokenString)
-
+	
 	payload, err := jh.Parse(tokenString)
 	require.NoError(t, err)
 	require.Equal(t, up, &payload.UserPrincipal)
@@ -129,23 +128,23 @@ func TestTokenHandler_GenerateAndParseBack(t *testing.T) {
 func TestTokenHandler_ParseDetectsInvalidSignature(t *testing.T) {
 	jh := getReferenceJwtHandler()
 	up := getReferenceUser()
-
+	
 	tokenString, err := jh.Generate(up)
 	require.NoError(t, err)
-
+	
 	// Adding "admin" to roles and rebuilding the token, while using the old signature
 	btc := decodeClaims(t, tokenString)
 	require.Equal(t, []Role{Student}, btc.Roles)
 	btc.Roles = append(btc.Roles, Admin)
 	newTokenString := replaceClaims(t, tokenString, btc)
-
+	
 	// Invalid signature must be detected
 	_, err = jh.Parse(newTokenString)
 	require.Error(t, err)
 	require.ErrorIs(t, err, jwt.ErrSignatureInvalid)
-
+	
 	t.Log("With bad signature:", newTokenString)
-
+	
 	// Invalid signature IS NOT detected when explicitly ignored
 	payload, err := jh.ParseWithoutSignature(newTokenString)
 	require.NoError(t, err)
@@ -156,24 +155,24 @@ func TestTokenHandler_ParseDetectsInvalidSignature(t *testing.T) {
 func TestTokenHandler_ParseDetectsInvalidSignature_AlgNone(t *testing.T) {
 	jh := getReferenceJwtHandler()
 	up := getReferenceUser()
-
+	
 	btc := jh.generateClaims(up)
-
+	
 	// Adding "admin" to roles and rebuilding the token, while using the old signature
 	require.Equal(t, []Role{Student}, btc.Roles)
 	btc.Roles = append(btc.Roles, Admin)
-
+	
 	// jh.generateClaims() -> NewWithClaims() -> SignedString() is identical to JwtHandler.Generate()
 	tokenString, err := jwt.NewWithClaims(jwt.SigningMethodNone, btc).SignedString(jwt.UnsafeAllowNoneSignatureType)
 	require.NoError(t, err)
-
+	
 	t.Log("With none method:", tokenString)
-
+	
 	// Method "none" must be detected
 	_, err = jh.Parse(tokenString)
 	require.Error(t, err)
 	require.ErrorIs(t, err, jwt.ErrTokenSignatureInvalid)
-
+	
 	// Method "none" IS NOT detected when explicitly ignored
 	payload, err := jh.ParseWithoutSignature(tokenString)
 	require.NoError(t, err)
@@ -183,22 +182,22 @@ func TestTokenHandler_ParseDetectsInvalidSignature_AlgNone(t *testing.T) {
 func TestTokenHandler_ParseDetectsInvalidSignature_DifferentKey(t *testing.T) {
 	jh := getReferenceJwtHandler()
 	up := getReferenceUser()
-
+	
 	jh.SigningKey = []byte("42-42-42")
-
+	
 	tokenString, err := jh.Generate(up)
 	require.NoError(t, err)
-
+	
 	// the original key will be used for verification
 	jh.SigningKey = testSigningKey
-
+	
 	// Invalid signature must be detected
 	_, err = jh.Parse(tokenString)
 	require.Error(t, err)
 	require.ErrorIs(t, err, jwt.ErrSignatureInvalid)
-
+	
 	t.Log("Signature with a different key:", tokenString)
-
+	
 	// Invalid signature IS NOT detected when explicitly ignored
 	_, err = jh.ParseWithoutSignature(tokenString)
 	require.NoError(t, err)
@@ -207,14 +206,14 @@ func TestTokenHandler_ParseDetectsInvalidSignature_DifferentKey(t *testing.T) {
 func TestTokenHandler_ParseDetectsExpiration(t *testing.T) {
 	// Token created 2 * TokenTtl ago, thus expired  1 TokenTtl ago
 	tokenString := generateModifiedReferenceTokenString(t, offsetTimestamps(-2*testTokenTtl))
-
+	
 	jh := getReferenceJwtHandler()
-
+	
 	_, err := jh.Parse(tokenString)
 	require.Error(t, err)
 	require.ErrorIs(t, err, jwt.ErrTokenExpired)
 	//t.Log(err)
-
+	
 	_, err = jh.ParseWithoutSignature(tokenString)
 	require.Error(t, err)
 	require.ErrorIs(t, err, jwt.ErrTokenExpired)
@@ -223,15 +222,15 @@ func TestTokenHandler_ParseDetectsExpiration(t *testing.T) {
 func TestTokenHandler_ParseDetectsNotBefore(t *testing.T) {
 	// Token created 1 * TokenTtl in the future, thus not yet valid
 	tokenString := generateModifiedReferenceTokenString(t, offsetTimestamps(1*testTokenTtl))
-
+	
 	jh := getReferenceJwtHandler()
-
+	
 	_, err := jh.Parse(tokenString)
 	require.Error(t, err)
 	require.ErrorIs(t, err, jwt.ErrTokenUsedBeforeIssued) // both must be present
 	require.ErrorIs(t, err, jwt.ErrTokenNotValidYet)      // due to bit mask mechanism in the underlying error
 	//t.Log(err)
-
+	
 	_, err = jh.ParseWithoutSignature(tokenString)
 	require.Error(t, err)
 	require.ErrorIs(t, err, jwt.ErrTokenUsedBeforeIssued) // both must be present
@@ -239,21 +238,21 @@ func TestTokenHandler_ParseDetectsNotBefore(t *testing.T) {
 }
 
 func TestTokenHandler_ParseDetectsMissingClaim_ExpiresAt(t *testing.T) {
-
+	
 	tokenString := generateModifiedReferenceTokenString(t, func(btc *bearerTokenClaims) {
 		btc.ExpiresAt = nil
 	})
-
+	
 	jh := getReferenceJwtHandler()
-
+	
 	token, err := jh.Parse(tokenString)
 	require.True(t, token.ExpiresAt.IsZero())
 	require.Error(t, err)
 	require.ErrorIs(t, err, jwt.ErrTokenExpired)
-
+	
 	//t.Log(err)
 	//t.Logf("%+v", token)
-
+	
 	token, err = jh.ParseWithoutSignature(tokenString)
 	require.True(t, token.ExpiresAt.IsZero())
 	require.Error(t, err)
@@ -261,21 +260,21 @@ func TestTokenHandler_ParseDetectsMissingClaim_ExpiresAt(t *testing.T) {
 }
 
 func TestTokenHandler_ParseDetectsMissingClaim_IssuedAt(t *testing.T) {
-
+	
 	tokenString := generateModifiedReferenceTokenString(t, func(btc *bearerTokenClaims) {
 		btc.IssuedAt = nil
 	})
-
+	
 	jh := getReferenceJwtHandler()
-
+	
 	token, err := jh.Parse(tokenString)
 	require.True(t, token.IssuedAt.IsZero())
 	require.Error(t, err)
 	require.ErrorIs(t, err, jwt.ErrTokenUsedBeforeIssued)
-
+	
 	//t.Log(err)
 	//t.Logf("%+v", token)
-
+	
 	token, err = jh.ParseWithoutSignature(tokenString)
 	require.True(t, token.IssuedAt.IsZero())
 	require.Error(t, err)
@@ -283,21 +282,21 @@ func TestTokenHandler_ParseDetectsMissingClaim_IssuedAt(t *testing.T) {
 }
 
 func TestTokenHandler_ParseDetectsMissingClaim_NotBefore(t *testing.T) {
-
+	
 	tokenString := generateModifiedReferenceTokenString(t, func(btc *bearerTokenClaims) {
 		btc.NotBefore = nil
 	})
-
+	
 	jh := getReferenceJwtHandler()
-
+	
 	token, err := jh.Parse(tokenString)
 	require.True(t, token.NotBefore.IsZero())
 	require.Error(t, err)
 	require.ErrorIs(t, err, jwt.ErrTokenNotValidYet)
-
+	
 	//t.Log(err)
 	//t.Logf("%+v", token)
-
+	
 	token, err = jh.ParseWithoutSignature(tokenString)
 	require.True(t, token.NotBefore.IsZero())
 	require.Error(t, err)
@@ -305,56 +304,56 @@ func TestTokenHandler_ParseDetectsMissingClaim_NotBefore(t *testing.T) {
 }
 
 func TestTokenHandler_ParseDetectsMismatch_Issuer(t *testing.T) {
-
+	
 	generateTokenWithModifiedIssuer := func(t *testing.T, issuer string) string {
 		t.Helper()
-
+		
 		jh := getReferenceJwtHandler()
 		jh.Issuer = issuer
 		up := getReferenceUser()
-
+		
 		tokenString, err := jh.Generate(up)
 		require.NoError(t, err)
 		return tokenString
 	}
-
+	
 	cases := map[string]string{
 		"different_issuer": generateTokenWithModifiedIssuer(t, "some-other-authority"),
 		"empty_issuer":     generateTokenWithModifiedIssuer(t, ""),
 	}
-
+	
 	for name, tokenString := range cases {
 		t.Run(name, func(t *testing.T) {
 			jh := getReferenceJwtHandler()
-
+			
 			_, err := jh.Parse(tokenString)
 			require.Error(t, err)
 			require.ErrorIs(t, err, jwt.ErrTokenInvalidIssuer)
-
+			
 			//t.Log(err)
-
+			
 			_, err = jh.ParseWithoutSignature(tokenString)
 			require.Error(t, err)
 			require.ErrorIs(t, err, jwt.ErrTokenInvalidIssuer)
 		})
 	}
-
+	
 }
 
 func TestTokenHandler_ParseDetectsMismatch_Audience(t *testing.T) {
-
+	
 	generateTokenWithModifiedAudience := func(t *testing.T, audience []string) string {
 		t.Helper()
-
+		
 		jh := getReferenceJwtHandler()
 		jh.AudienceGenerated = audience
 		up := getReferenceUser()
-
+		
 		tokenString, err := jh.Generate(up)
 		require.NoError(t, err)
 		return tokenString
 	}
-
+	
 	cases := map[string]struct {
 		tokenString string
 		success     bool
@@ -380,20 +379,20 @@ func TestTokenHandler_ParseDetectsMismatch_Audience(t *testing.T) {
 			success:     false,
 		},
 	}
-
+	
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
 			jh := getReferenceJwtHandler()
-
+			
 			_, err := jh.Parse(tc.tokenString)
-
+			
 			if tc.success {
 				require.NoError(t, err)
 			} else {
 				require.Error(t, err)
 				require.ErrorIs(t, err, jwt.ErrTokenInvalidAudience)
 			}
-
+			
 			_, err = jh.ParseWithoutSignature(tc.tokenString)
 			if tc.success {
 				require.NoError(t, err)
