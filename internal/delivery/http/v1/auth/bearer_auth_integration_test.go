@@ -13,20 +13,17 @@ import (
 	"time"
 )
 
+const (
+	iss      = "course-watch"
+	aud      = "course-watch-api"
+	tokenTtl = time.Hour * 1
+)
+
 var validKey = []byte("1234")
 var invalidKey = []byte("42-42-42")
 
 func getParametrizedTokenHandler(key []byte) *security.JwtHandler {
-	jwt := security.NewJwtHandler(key)
-	
-	const aud = "course-watch-api"
-	
-	jwt.Issuer = "course-watch"
-	jwt.AudienceExpected = aud
-	jwt.AudienceGenerated = []string{aud}
-	jwt.TokenTtl = time.Hour * 1
-	
-	return jwt
+	return security.NewJwtHandler(iss, aud, []string{aud}, tokenTtl, key)
 }
 
 func TestBearerAuthenticator_Integration_Authorize(t *testing.T) {

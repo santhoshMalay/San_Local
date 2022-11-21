@@ -31,12 +31,12 @@ func TestBearerTokenClaims_IgnoresExpiration(t *testing.T) {
 }
 
 func getReferenceJwtHandler() *JwtHandler {
-	jh := NewJwtHandler(testSigningKey)
-	jh.Issuer = testAuthority
-	jh.AudienceGenerated = []string{testAudience}
-	jh.AudienceExpected = testAudience
-	jh.TokenTtl = testTokenTtl
-	return jh
+	return NewJwtHandler(
+		testAuthority,
+		testAudience,
+		[]string{testAudience},
+		testTokenTtl,
+		testSigningKey)
 }
 
 func getReferenceUser() *UserPrincipal {
