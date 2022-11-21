@@ -44,6 +44,19 @@ definitions:
       persistent:
         type: boolean
     type: object
+  service.SignupUserInput:
+    properties:
+      display_name:
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+      password:
+        type: string
+    type: object
   service.UpdateUserInfoInput:
     properties:
       display_name:
@@ -70,6 +83,13 @@ paths:
       consumes:
       - application/json
       description: authenticates the user log-in credentials
+      parameters:
+      - description: sign up info
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/service.LoginInput'
       produces:
       - application/json
       responses:
@@ -93,6 +113,13 @@ paths:
       consumes:
       - application/json
       description: Creates new user with the given detials
+      parameters:
+      - description: sign up info
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/service.SignupUserInput'
       produces:
       - application/json
       responses:

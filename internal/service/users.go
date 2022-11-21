@@ -43,18 +43,6 @@ func (u *usersService) UpdateUserInfo(ctx context.Context, id string, input *Upd
 	return u.repo.Update(ctx, id, &upd)
 }
 
-func (u *usersService) Login(ctx context.Context, input *LoginInput) (*core.User, error) {
-	user, err := u.repo.GetByEmail(ctx, input.Email)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := bcrypt.CompareHashAndPassword(user.HashedPassword, []byte(input.Password)); err != nil {
-		return nil, err
-	}
-	return user, nil
-}
-
 func (u *usersService) Signup(ctx context.Context, input *SignupUserInput) error {
 	user, err := u.repo.GetByEmail(ctx, input.Email)
 	if err != nil {
@@ -62,7 +50,7 @@ func (u *usersService) Signup(ctx context.Context, input *SignupUserInput) error
 	}
 
 	if user.Email == input.Email {
-		return err
+		return ErrUserAlreadyExist
 	}
 
 	user = &core.User{
@@ -77,6 +65,18 @@ func (u *usersService) Signup(ctx context.Context, input *SignupUserInput) error
 		return err
 	}
 	return nil
+}
+
+func (u *usersService) Login(ctx context.Context, input *LoginInput) (*core.User, error) {
+	user, err := u.repo.GetByEmail(ctx, input.Email)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := bcrypt.CompareHashAndPassword(user.HashedPassword, []byte(input.Password)); err != nil {
+		return nil, err
+	}
+	return user, nil
 }
 
 func newUsersService(repo repository.Users, idGen *idgen.IdGen) Users {

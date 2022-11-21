@@ -29,6 +29,17 @@ const docTemplate = `{
                     "Authentication"
                 ],
                 "summary": "Authenticate user credentials",
+                "parameters": [
+                    {
+                        "description": "sign up info",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/service.LoginInput"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -64,6 +75,17 @@ const docTemplate = `{
                     "Authentication"
                 ],
                 "summary": "New user signup",
+                "parameters": [
+                    {
+                        "description": "sign up info",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/service.SignupUserInput"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -364,6 +386,26 @@ const docTemplate = `{
                 },
                 "persistent": {
                     "type": "boolean"
+                }
+            }
+        },
+        "service.SignupUserInput": {
+            "type": "object",
+            "properties": {
+                "display_name": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
                 }
             }
         },
