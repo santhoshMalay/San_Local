@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"github.com/zhuravlev-pe/course-watch/internal/config"
 	"net/http"
 )
 
@@ -9,14 +10,14 @@ type Server struct {
 	httpServer *http.Server
 }
 
-func NewServer( /*cfg *config.Config,*/ handler http.Handler) *Server {
+func NewServer(cfg *config.Config, handler http.Handler) *Server {
 	return &Server{
 		httpServer: &http.Server{
-			Addr:    "localhost:8080", //":" + cfg.HTTP.Port,
-			Handler: handler,
-			//ReadTimeout:    cfg.HTTP.ReadTimeout,
-			//WriteTimeout:   cfg.HTTP.WriteTimeout,
-			//MaxHeaderBytes: cfg.HTTP.MaxHeaderMegabytes << 20,
+			Addr:           cfg.HTTP.Host + ":" + cfg.HTTP.Port,
+			Handler:        handler,
+			ReadTimeout:    cfg.HTTP.ReadTimeout,
+			WriteTimeout:   cfg.HTTP.WriteTimeout,
+			MaxHeaderBytes: cfg.HTTP.MaxHeaderMegabytes << 20,
 		},
 	}
 }
