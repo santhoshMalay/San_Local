@@ -62,14 +62,20 @@ type JwtHandler struct {
 	SigningKey []byte
 }
 
-const defaultTokenTtl = time.Hour * 1
-
-func NewJwtHandler(signingKey []byte) *JwtHandler {
-	parser := jwt.NewParser(jwt.WithValidMethods([]string{signingMethod.Alg()}))
+func NewJwtHandler(
+	issuer string,
+	expAudience string,
+	targetAudience []string,
+	tokenTTL time.Duration,
+	signingKey []byte,
+) *JwtHandler {
 	return &JwtHandler{
-		parser:     parser,
-		TokenTtl:   defaultTokenTtl,
-		SigningKey: signingKey,
+		parser:            jwt.NewParser(jwt.WithValidMethods([]string{signingMethod.Alg()})),
+		Issuer:            issuer,
+		AudienceExpected:  expAudience,
+		AudienceGenerated: targetAudience,
+		TokenTtl:          tokenTTL,
+		SigningKey:        signingKey,
 	}
 }
 

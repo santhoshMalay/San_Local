@@ -52,7 +52,7 @@ func Run() {
 	srv := server.NewServer(cfg, handler.Init())
 	
 	log.Print("Starting server")
-	if err := srv.Run(); err != nil {
+	if err = srv.Run(); err != nil {
 		log.Fatal(err)
 	}
 }
