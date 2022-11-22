@@ -1,8 +1,12 @@
 package apiserver
 
 import (
+<<<<<<< HEAD
 	"log"
 
+=======
+	"github.com/zhuravlev-pe/course-watch/internal/config"
+>>>>>>> 64b2afd3fc6c83fbffcb07e6c3eb3f3d3bca3d1a
 	"github.com/zhuravlev-pe/course-watch/internal/delivery/http"
 	"github.com/zhuravlev-pe/course-watch/internal/delivery/http/v1/fake_authenticator"
 	"github.com/zhuravlev-pe/course-watch/internal/repository/fake_repo"
@@ -28,30 +32,33 @@ import (
 // @tag.description Login, logout and other security related operations
 // Run initializes whole application.
 func Run() {
-
-	//TODO: read nodeId from config
-	idGen, err := idgen.New(1)
+	cfg, err := config.GetConfig()
 	if err != nil {
 		log.Fatal(err)
 	}
-
+	
+	idGen, err := idgen.New(cfg.SnowflakeNode)
+	if err != nil {
+		log.Fatal(err)
+	}
+	
 	repos := fake_repo.New()
-
-	//jwtHandler := security.NewJwtHandler()
+	
+	//jwtHandler := security.NewJwtHandler([]byte(cfg.SigningKey))
 	// TODO: first config related task - configure jwtHandler
-
+	
 	fakeBearerAuth := fake_authenticator.New() // to be able to test /user endpoints without logging in
-
+	
 	services := service.NewServices(service.Deps{
 		Repos: repos,
 		IdGen: idGen,
 	})
 	handler := http.NewHandler(services, fakeBearerAuth)
-
-	srv := server.NewServer(handler.Init())
-
+	
+	srv := server.NewServer(cfg, handler.Init())
+	
 	log.Print("Starting server")
-	if err := srv.Run(); err != nil {
+	if err = srv.Run(); err != nil {
 		log.Fatal(err)
 	}
 }
