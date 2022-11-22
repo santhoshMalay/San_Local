@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"time"
 
 	"github.com/zhuravlev-pe/course-watch/internal/core"
 	"github.com/zhuravlev-pe/course-watch/internal/repository"
@@ -59,13 +60,14 @@ func (u *usersService) Signup(ctx context.Context, input *SignupUserInput) error
 		return err
 	}
 	user = &core.User{
-		Id:             u.idGen.Generate(),
-		Email:          input.Email,
-		FirstName:      input.FirstName,
-		LastName:       input.LastName,
-		DisplayName:    input.DisplayName,
-		HashedPassword: hashPassword,
-		Roles:          []security.Role{security.Student},
+		Id:               u.idGen.Generate(),
+		Email:            input.Email,
+		FirstName:        input.FirstName,
+		LastName:         input.LastName,
+		DisplayName:      input.DisplayName,
+		RegistrationDate: time.Now(),
+		HashedPassword:   hashPassword,
+		Roles:            []security.Role{security.Student},
 	}
 
 	if err := u.repo.Insert(ctx, user); err != nil {

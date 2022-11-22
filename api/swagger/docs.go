@@ -31,7 +31,7 @@ const docTemplate = `{
                 "summary": "Authenticate user credentials",
                 "parameters": [
                     {
-                        "description": "sign up info",
+                        "description": "Login user details",
                         "name": "input",
                         "in": "body",
                         "required": true,
@@ -77,7 +77,7 @@ const docTemplate = `{
                 "summary": "New user signup",
                 "parameters": [
                     {
-                        "description": "sign up info",
+                        "description": "New user signup details",
                         "name": "input",
                         "in": "body",
                         "required": true,

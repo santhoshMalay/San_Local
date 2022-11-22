@@ -84,7 +84,7 @@ paths:
       - application/json
       description: authenticates the user log-in credentials
       parameters:
-      - description: sign up info
+      - description: Login user details
         in: body
         name: input
         required: true
@@ -114,7 +114,7 @@ paths:
       - application/json
       description: Creates new user with the given detials
       parameters:
-      - description: sign up info
+      - description: New user signup details
         in: body
         name: input
         required: true

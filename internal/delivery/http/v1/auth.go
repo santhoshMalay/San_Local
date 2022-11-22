@@ -24,7 +24,7 @@ func (h *Handler) initAuthRoutes(api *gin.RouterGroup) {
 // @ModuleID signupNewUser
 // @Accept  json
 // @Produce  json
-// @Param input body service.SignupUserInput true "sign up info"
+// @Param input body service.SignupUserInput true "New user signup details"
 // @Success 200 {object} service.LoginInput
 // @Failure 400,500 {object} utils.Response
 // @Router /auth/signup [Post]
@@ -55,7 +55,7 @@ func (h *Handler) signupNewUser(ctx *gin.Context) {
 // @ModuleID userLogin
 // @Accept  json
 // @Produce  json
-// @Param input body service.LoginInput true "sign up info"
+// @Param input body service.LoginInput true "Login user details"
 // @Success 200 {object} service.LoginInput
 // @Failure 400,500 {object} utils.Response
 // @Router /auth/login [Post]
