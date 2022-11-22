@@ -6,11 +6,11 @@ files:
 
 `go install github.com/swaggo/swag/cmd/swag@latest`
 
-The initial version is built using swag v1.8.6
+The current version is built using swag v1.8.7
 
 In order to rebuild swagger files run:
 
-`swag init -g internal/apiserver/apiserver.go -o api/swagger`
+`swag init --parseDependency --dir internal/apiserver -g apiserver.go -o api/swagger`
 
 Alternatively, use `swag` target in the Makefile
 

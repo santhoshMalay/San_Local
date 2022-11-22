@@ -29,22 +29,22 @@ func getParametrizedTokenHandler(key []byte) *security.JwtHandler {
 func TestBearerAuthenticator_Integration_Authorize(t *testing.T) {
 	tokenHandler := getParametrizedTokenHandler(validKey)
 	fakeTokenHandler := getParametrizedTokenHandler(invalidKey)
-	
+
 	ba := auth.NewBearerAuthenticator(tokenHandler)
-	
+
 	var endpointHit bool
-	
+
 	router := gin.New()
 	g := router.Group("/secure", ba.Authorize(security.Admin))
 	g.GET("/data", func(context *gin.Context) {
 		endpointHit = true
-		
+
 		up, err := auth.GetAuthenticatedUser(context)
 		require.NoError(t, err)
-		
+
 		context.JSON(http.StatusOK, up)
 	})
-	
+
 	cases := map[string]struct {
 		loggedInUser         *security.UserPrincipal
 		tokenHandler         *security.JwtHandler
@@ -67,13 +67,13 @@ func TestBearerAuthenticator_Integration_Authorize(t *testing.T) {
 			},
 			tokenHandler:         fakeTokenHandler,
 			expectedStatusCode:   http.StatusUnauthorized,
-			expectedErrorMessage: `{"message":"Unauthorized"}`,
+			expectedErrorMessage: `{"title":"Unauthorized","status":401}`,
 		},
 		"no_authorization_header": {
 			loggedInUser:         nil,
 			tokenHandler:         nil,
 			expectedStatusCode:   http.StatusUnauthorized,
-			expectedErrorMessage: `{"message":"Unauthorized"}`,
+			expectedErrorMessage: `{"title":"Unauthorized","status":401}`,
 		},
 		"authorization_failure": {
 			loggedInUser: &security.UserPrincipal{
@@ -82,15 +82,15 @@ func TestBearerAuthenticator_Integration_Authorize(t *testing.T) {
 			},
 			tokenHandler:         tokenHandler,
 			expectedStatusCode:   http.StatusForbidden,
-			expectedErrorMessage: `{"message":"Forbidden. Required user role: admin"}`,
+			expectedErrorMessage: `{"title":"Forbidden. Required user role: admin","status":403}`,
 		},
 	}
-	
+
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			
+
 			endpointHit = false
-			
+
 			w := httptest.NewRecorder()
 			req, _ := http.NewRequest(http.MethodGet, "/secure/data", nil)
 			if tc.loggedInUser != nil {
@@ -99,9 +99,9 @@ func TestBearerAuthenticator_Integration_Authorize(t *testing.T) {
 				req.Header.Add("Authorization", "Bearer "+tokenString)
 			}
 			router.ServeHTTP(w, req)
-			
+
 			assert.Equal(t, tc.expectedStatusCode, w.Code)
-			
+
 			if tc.expectedStatusCode == http.StatusOK {
 				assert.True(t, endpointHit)
 				var userPrincipal security.UserPrincipal
@@ -119,22 +119,22 @@ func TestBearerAuthenticator_Integration_Authorize(t *testing.T) {
 func TestBearerAuthenticator_Integration_Authenticate(t *testing.T) {
 	tokenHandler := getParametrizedTokenHandler(validKey)
 	fakeTokenHandler := getParametrizedTokenHandler(invalidKey)
-	
+
 	ba := auth.NewBearerAuthenticator(tokenHandler)
-	
+
 	var endpointHit bool
-	
+
 	router := gin.New()
 	g := router.Group("/secure", ba.Authenticate)
 	g.GET("/data", func(context *gin.Context) {
 		endpointHit = true
-		
+
 		up, err := auth.GetAuthenticatedUser(context)
 		require.NoError(t, err)
-		
+
 		context.JSON(http.StatusOK, up)
 	})
-	
+
 	cases := map[string]struct {
 		loggedInUser         *security.UserPrincipal
 		tokenHandler         *security.JwtHandler
@@ -157,13 +157,13 @@ func TestBearerAuthenticator_Integration_Authenticate(t *testing.T) {
 			},
 			tokenHandler:         fakeTokenHandler,
 			expectedStatusCode:   http.StatusUnauthorized,
-			expectedErrorMessage: `{"message":"Unauthorized"}`,
+			expectedErrorMessage: `{"title":"Unauthorized","status":401}`,
 		},
 		"no_authorization_header": {
 			loggedInUser:         nil,
 			tokenHandler:         nil,
 			expectedStatusCode:   http.StatusUnauthorized,
-			expectedErrorMessage: `{"message":"Unauthorized"}`,
+			expectedErrorMessage: `{"title":"Unauthorized","status":401}`,
 		},
 		"success_single_role": {
 			loggedInUser: &security.UserPrincipal{
@@ -175,12 +175,12 @@ func TestBearerAuthenticator_Integration_Authenticate(t *testing.T) {
 			expectedErrorMessage: "",
 		},
 	}
-	
+
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
-			
+
 			endpointHit = false
-			
+
 			w := httptest.NewRecorder()
 			req, _ := http.NewRequest(http.MethodGet, "/secure/data", nil)
 			if tc.loggedInUser != nil {
@@ -189,9 +189,9 @@ func TestBearerAuthenticator_Integration_Authenticate(t *testing.T) {
 				req.Header.Add("Authorization", "Bearer "+tokenString)
 			}
 			router.ServeHTTP(w, req)
-			
+
 			assert.Equal(t, tc.expectedStatusCode, w.Code)
-			
+
 			if tc.expectedStatusCode == http.StatusOK {
 				assert.True(t, endpointHit)
 				var userPrincipal security.UserPrincipal

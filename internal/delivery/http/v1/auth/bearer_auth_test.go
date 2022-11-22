@@ -35,7 +35,7 @@ func getTestSetup(t *testing.T) *testSetup {
 const testData = "test data"
 const validToken = "valid.token.value"
 const invalidToken = "42"
-const unauthorizedMessageBody = `{"message":"Unauthorized"}`
+const unauthorizedMessageBody = `{"title":"Unauthorized","status":401}`
 
 var referencePayload = &security.JwtPayload{
 	UserPrincipal: security.UserPrincipal{
@@ -250,7 +250,7 @@ func TestEnsureAuthorizedUser_NoMiddleware(t *testing.T) {
 	ts.router.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusForbidden, w.Code)
-	assert.Equal(t, `{"message":"Forbidden. Required user role: admin"}`, w.Body.String())
+	assert.Equal(t, `{"title":"Forbidden. Required user role: admin","status":403}`, w.Body.String())
 	assert.False(t, runPastAuthorizeCheck)
 }
 
@@ -295,7 +295,7 @@ func TestBearerAuthenticator_Authorize(t *testing.T) {
 			userRoles:          []security.Role{security.Student},
 			expectedParseError: nil,
 			expectedStatusCode: http.StatusForbidden,
-			expectedBody:       `{"message":"Forbidden. Required user role: admin"}`,
+			expectedBody:       `{"title":"Forbidden. Required user role: admin","status":403}`,
 		},
 	}
 
