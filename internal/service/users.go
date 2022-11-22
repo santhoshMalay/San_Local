@@ -48,14 +48,14 @@ func (u *usersService) UpdateUserInfo(ctx context.Context, id string, input *Upd
 func (u *usersService) Signup(ctx context.Context, input *SignupUserInput) error {
 	user, err := u.repo.GetByEmail(ctx, input.Email)
 	if err != nil && err != repository.ErrNotFound {
-		return err
+		return ErrInvalidCredentials
 	}
 
 	if user != nil && user.Email == input.Email {
 		return ErrUserAlreadyExist
 	}
 
-	hashPassword, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.MinCost)
+	hashPassword, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return err
 	}

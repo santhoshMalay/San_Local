@@ -57,7 +57,7 @@ func (h *Handler) signupNewUser(ctx *gin.Context) {
 // @Produce  json
 // @Param input body service.LoginInput true "Login user details"
 // @Success 200 {object} service.LoginInput
-// @Failure 400,500 {object} utils.Response
+// @Failure 400 {object} utils.Response
 // @Router /auth/login [Post]
 func (h *Handler) userLogin(ctx *gin.Context) {
 	var input service.LoginInput

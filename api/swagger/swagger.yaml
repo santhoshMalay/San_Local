@@ -101,10 +101,6 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/utils.Response'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/utils.Response'
       summary: Authenticate user credentials
       tags:
       - Authentication
