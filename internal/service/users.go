@@ -6,6 +6,7 @@ import (
 	"github.com/zhuravlev-pe/course-watch/internal/core"
 	"github.com/zhuravlev-pe/course-watch/internal/repository"
 	"github.com/zhuravlev-pe/course-watch/pkg/idgen"
+	"github.com/zhuravlev-pe/course-watch/pkg/security"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -45,20 +46,26 @@ func (u *usersService) UpdateUserInfo(ctx context.Context, id string, input *Upd
 
 func (u *usersService) Signup(ctx context.Context, input *SignupUserInput) error {
 	user, err := u.repo.GetByEmail(ctx, input.Email)
-	if err != nil {
+	if err != nil && err != repository.ErrNotFound {
 		return err
 	}
 
-	if user.Email == input.Email {
+	if user != nil && user.Email == input.Email {
 		return ErrUserAlreadyExist
 	}
 
+	hashPassword, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.MinCost)
+	if err != nil {
+		return err
+	}
 	user = &core.User{
-		Id:          u.idGen.Generate(),
-		Email:       input.Email,
-		FirstName:   input.FirstName,
-		LastName:    input.LastName,
-		DisplayName: input.DisplayName,
+		Id:             u.idGen.Generate(),
+		Email:          input.Email,
+		FirstName:      input.FirstName,
+		LastName:       input.LastName,
+		DisplayName:    input.DisplayName,
+		HashedPassword: hashPassword,
+		Roles:          []security.Role{security.Student},
 	}
 
 	if err := u.repo.Insert(ctx, user); err != nil {
