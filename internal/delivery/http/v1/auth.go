@@ -73,6 +73,12 @@ func (h *Handler) userLogin(ctx *gin.Context) {
 			utils.ErrorResponse(ctx, http.StatusNotFound, err)
 			return
 		}
+
+		if err == service.ErrInvalidCredentials {
+			utils.ErrorResponse(ctx, http.StatusBadRequest, err)
+			return
+		}
+
 		utils.ErrorResponse(ctx, http.StatusInternalServerError, err)
 		return
 	}
