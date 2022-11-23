@@ -2,6 +2,7 @@ package fake_repo
 
 import (
 	"context"
+
 	"github.com/zhuravlev-pe/course-watch/internal/core"
 	"github.com/zhuravlev-pe/course-watch/internal/repository"
 )

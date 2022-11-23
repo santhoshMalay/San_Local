@@ -2,11 +2,12 @@ package v1
 
 import (
 	"fmt"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/zhuravlev-pe/course-watch/internal/delivery/http/v1/auth"
 	"github.com/zhuravlev-pe/course-watch/internal/delivery/http/v1/utils"
 	"github.com/zhuravlev-pe/course-watch/internal/service"
-	"net/http"
 )
 
 func (h *Handler) initUserRoutes(api *gin.RouterGroup) {

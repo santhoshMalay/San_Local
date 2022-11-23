@@ -2,9 +2,14 @@ package service
 
 import (
 	"context"
+	"time"
+
 	validation "github.com/go-ozzo/ozzo-validation/v4"
+	"github.com/zhuravlev-pe/course-watch/internal/core"
 	"github.com/zhuravlev-pe/course-watch/internal/repository"
 	"github.com/zhuravlev-pe/course-watch/pkg/idgen"
+	"github.com/zhuravlev-pe/course-watch/pkg/security"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type usersService struct {
@@ -48,6 +53,54 @@ func (u *usersService) UpdateUserInfo(ctx context.Context, id string, input *Upd
 	upd.LastName = input.LastName
 	upd.DisplayName = input.DisplayName
 	return u.repo.Update(ctx, id, &upd)
+}
+
+func (u *usersService) Signup(ctx context.Context, input *SignupUserInput) error {
+	user, err := u.repo.GetByEmail(ctx, input.Email)
+	if err != nil && err != repository.ErrNotFound {
+		//Any error other than ErrorNotFound should stop the Signup flow as ErrorNotFound is valid for the user Signup
+		return err
+	}
+
+	if user != nil && user.Email == input.Email {
+		return ErrUserAlreadyExist
+	}
+
+	hashPassword, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+	user = &core.User{
+		Id:               u.idGen.Generate(),
+		Email:            input.Email,
+		FirstName:        input.FirstName,
+		LastName:         input.LastName,
+		DisplayName:      input.DisplayName,
+		RegistrationDate: time.Now(),
+		HashedPassword:   hashPassword,
+		Roles:            []security.Role{security.Student},
+	}
+
+	if err = u.repo.Insert(ctx, user); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (u *usersService) Login(ctx context.Context, input *LoginInput) (*core.User, error) {
+	user, err := u.repo.GetByEmail(ctx, input.Email)
+	if err != nil && err != repository.ErrNotFound {
+		return nil, err
+	}
+
+	if err == repository.ErrNotFound {
+		return nil, ErrInvalidCredentials
+	}
+
+	if err = bcrypt.CompareHashAndPassword(user.HashedPassword, []byte(input.Password)); err != nil {
+		return nil, ErrInvalidCredentials
+	}
+	return user, nil
 }
 
 func newUsersService(repo repository.Users, idGen *idgen.IdGen) Users {
