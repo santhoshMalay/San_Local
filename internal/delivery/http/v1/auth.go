@@ -5,7 +5,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/zhuravlev-pe/course-watch/internal/delivery/http/v1/utils"
-	"github.com/zhuravlev-pe/course-watch/internal/repository"
 	"github.com/zhuravlev-pe/course-watch/internal/service"
 	"github.com/zhuravlev-pe/course-watch/pkg/security"
 )
@@ -37,9 +36,8 @@ func (h *Handler) signupNewUser(ctx *gin.Context) {
 	err := h.services.Users.Signup(ctx.Request.Context(), &input)
 
 	if err != nil {
-		// TODO: discriminate between validation errors, logic errors and internal server errors
-		if err == repository.ErrNotFound {
-			utils.ErrorResponse(ctx, http.StatusNotFound, err)
+		if err == service.ErrUserAlreadyExist {
+			utils.ErrorResponse(ctx, http.StatusBadRequest, err)
 			return
 		}
 		utils.ErrorResponse(ctx, http.StatusInternalServerError, err)
@@ -68,12 +66,6 @@ func (h *Handler) userLogin(ctx *gin.Context) {
 	result, err := h.services.Users.Login(ctx.Request.Context(), &input)
 
 	if err != nil {
-		// TODO: discriminate between validation errors, logic errors and internal server errors
-		if err == repository.ErrNotFound {
-			utils.ErrorResponse(ctx, http.StatusNotFound, err)
-			return
-		}
-
 		if err == service.ErrInvalidCredentials {
 			utils.ErrorResponse(ctx, http.StatusBadRequest, err)
 			return
