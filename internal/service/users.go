@@ -88,7 +88,7 @@ func (u *usersService) Login(ctx context.Context, input *LoginInput) (*core.User
 	}
 
 	if err = bcrypt.CompareHashAndPassword(user.HashedPassword, []byte(input.Password)); err != nil {
-		return nil, err
+		return nil, ErrInvalidCredentials
 	}
 	return user, nil
 }
