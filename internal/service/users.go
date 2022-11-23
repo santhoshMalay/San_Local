@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/zhuravlev-pe/course-watch/internal/repository"
 	"github.com/zhuravlev-pe/course-watch/pkg/idgen"
 )
@@ -27,8 +28,17 @@ func (u *usersService) GetUserInfo(ctx context.Context, id string) (*GetUserInfo
 	return &result, nil
 }
 
+func (i *UpdateUserInfoInput) Validate() error {
+	return validation.ValidateStruct(i,
+		validation.Field(&i.FirstName, validation.Required),
+		validation.Field(&i.LastName, validation.Required),
+	)
+}
+
 func (u *usersService) UpdateUserInfo(ctx context.Context, id string, input *UpdateUserInfoInput) error {
-	//TODO input validation
+	if err := input.Validate(); err != nil {
+		return err
+	}
 	_, err := u.repo.GetById(ctx, id)
 	if err != nil {
 		return err

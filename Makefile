@@ -2,7 +2,7 @@
 
 .PHONY: swag
 swag:
-	swag init -g internal/apiserver/apiserver.go -o api/swagger
+	swag init --parseDependency --dir internal/apiserver -g apiserver.go -o api/swagger
 
 .PHONY: build
 build:

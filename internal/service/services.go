@@ -1,5 +1,7 @@
 package service
 
+//go:generate mockgen -source=$GOFILE -destination=mocks/services.go
+
 import (
 	"context"
 	"github.com/zhuravlev-pe/course-watch/internal/core"

@@ -5,7 +5,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/zhuravlev-pe/course-watch/internal/delivery/http/v1/auth"
 	"github.com/zhuravlev-pe/course-watch/internal/delivery/http/v1/utils"
-	"github.com/zhuravlev-pe/course-watch/internal/repository"
 	"github.com/zhuravlev-pe/course-watch/internal/service"
 	"net/http"
 )
@@ -13,8 +12,8 @@ import (
 func (h *Handler) initUserRoutes(api *gin.RouterGroup) {
 	courses := api.Group("/user", h.bearer.Authenticate)
 	{
-		courses.GET("/", h.getUserInfo)
-		courses.PUT("/", h.updateUserInfo)
+		courses.GET("", h.getUserInfo)
+		courses.PUT("", h.updateUserInfo)
 	}
 }
 
@@ -25,9 +24,8 @@ func (h *Handler) initUserRoutes(api *gin.RouterGroup) {
 // @Accept  json
 // @Produce  json
 // @Success 200 {object} service.GetUserInfoOutput
-// @Failure 400,401,404,500 {object} utils.Response
-// @Failure default {object} utils.Response
-// @Router /user/ [get]
+// @Failure 401,404,500 {object} utils.Response
+// @Router /user [get]
 func (h *Handler) getUserInfo(ctx *gin.Context) {
 	up, err := auth.GetAuthenticatedUser(ctx)
 	if err != nil {
@@ -39,12 +37,7 @@ func (h *Handler) getUserInfo(ctx *gin.Context) {
 	result, err := h.services.Users.GetUserInfo(ctx.Request.Context(), up.UserId)
 
 	if err != nil {
-		// TODO: discriminate between validation errors, logic errors and internal server errors
-		if err == repository.ErrNotFound {
-			utils.ErrorResponse(ctx, http.StatusNotFound, err)
-			return
-		}
-		utils.ErrorResponse(ctx, http.StatusInternalServerError, err)
+		h.handleServiceError(ctx, err)
 		return
 	}
 	ctx.JSON(http.StatusOK, result)
@@ -57,10 +50,10 @@ func (h *Handler) getUserInfo(ctx *gin.Context) {
 // @Accept  json
 // @Produce  json
 // @Param input body service.UpdateUserInfoInput true "user info"
-// @Success 200
-// @Failure 400,401,404,500 {object} utils.Response
-// @Failure default {object} utils.Response
-// @Router /user/ [put]
+// @Success 204
+// @Failure 400             {object} utils.ValidationError
+// @Failure 401,404,500     {object} utils.Response
+// @Router /user [put]
 func (h *Handler) updateUserInfo(ctx *gin.Context) {
 	up, err := auth.GetAuthenticatedUser(ctx)
 	if err != nil {
@@ -69,22 +62,16 @@ func (h *Handler) updateUserInfo(ctx *gin.Context) {
 		return
 	}
 	var input service.UpdateUserInfoInput
-	if err = ctx.BindJSON(&input); err != nil {
-		utils.ErrorResponseString(ctx, http.StatusBadRequest, "invalid input body")
+	if !h.parseRequestBody(ctx, &input) {
 		return
 	}
 
 	err = h.services.Users.UpdateUserInfo(ctx.Request.Context(), up.UserId, &input)
 
 	if err != nil {
-		// TODO: discriminate between validation errors, logic errors and internal server errors
-		if err == repository.ErrNotFound {
-			utils.ErrorResponse(ctx, http.StatusNotFound, err)
-			return
-		}
-		utils.ErrorResponse(ctx, http.StatusInternalServerError, err)
+		h.handleServiceError(ctx, err)
 		return
 	}
 
-	ctx.Status(http.StatusOK)
+	ctx.Status(http.StatusNoContent)
 }
