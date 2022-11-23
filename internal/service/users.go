@@ -48,7 +48,8 @@ func (u *usersService) UpdateUserInfo(ctx context.Context, id string, input *Upd
 func (u *usersService) Signup(ctx context.Context, input *SignupUserInput) error {
 	user, err := u.repo.GetByEmail(ctx, input.Email)
 	if err != nil && err != repository.ErrNotFound {
-		return ErrInvalidCredentials
+		//Any error other than ErrorNotFound should stop the Signup flow as ErrorNotFound is valid for the user Signup
+		return err
 	}
 
 	if user != nil && user.Email == input.Email {
@@ -70,7 +71,7 @@ func (u *usersService) Signup(ctx context.Context, input *SignupUserInput) error
 		Roles:            []security.Role{security.Student},
 	}
 
-	if err := u.repo.Insert(ctx, user); err != nil {
+	if err = u.repo.Insert(ctx, user); err != nil {
 		return err
 	}
 	return nil
@@ -78,11 +79,15 @@ func (u *usersService) Signup(ctx context.Context, input *SignupUserInput) error
 
 func (u *usersService) Login(ctx context.Context, input *LoginInput) (*core.User, error) {
 	user, err := u.repo.GetByEmail(ctx, input.Email)
-	if err != nil {
+	if err != nil && err != repository.ErrNotFound {
 		return nil, err
 	}
 
-	if err := bcrypt.CompareHashAndPassword(user.HashedPassword, []byte(input.Password)); err != nil {
+	if err == repository.ErrNotFound {
+		return nil, ErrInvalidCredentials
+	}
+
+	if err = bcrypt.CompareHashAndPassword(user.HashedPassword, []byte(input.Password)); err != nil {
 		return nil, err
 	}
 	return user, nil
