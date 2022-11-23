@@ -201,7 +201,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/user/": {
+        "/user": {
             "get": {
                 "description": "returns info on the currently logged-in user. User_id is extracted from the bearer token",
                 "consumes": [
@@ -221,12 +221,6 @@ const docTemplate = `{
                             "$ref": "#/definitions/service.GetUserInfoOutput"
                         }
                     },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/utils.Response"
-                        }
-                    },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
@@ -241,12 +235,6 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/utils.Response"
-                        }
-                    },
-                    "default": {
-                        "description": "",
                         "schema": {
                             "$ref": "#/definitions/utils.Response"
                         }
@@ -277,13 +265,13 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK"
+                    "204": {
+                        "description": "No Content"
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/utils.Response"
+                            "$ref": "#/definitions/utils.ValidationError"
                         }
                     },
                     "401": {
@@ -300,12 +288,6 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/utils.Response"
-                        }
-                    },
-                    "default": {
-                        "description": "",
                         "schema": {
                             "$ref": "#/definitions/utils.Response"
                         }
@@ -420,10 +402,33 @@ const docTemplate = `{
         "utils.Response": {
             "type": "object",
             "properties": {
-                "message": {
+                "status": {
+                    "type": "integer"
+                },
+                "title": {
                     "type": "string"
                 }
             }
+        },
+        "utils.ValidationError": {
+            "type": "object",
+            "properties": {
+                "status": {
+                    "type": "integer",
+                    "example": 400
+                },
+                "title": {
+                    "type": "string",
+                    "example": "invalid request parameters"
+                },
+                "validation_errors": {
+                    "$ref": "#/definitions/validation.Errors"
+                }
+            }
+        },
+        "validation.Errors": {
+            "type": "object",
+            "additionalProperties": {}
         }
     },
     "tags": [

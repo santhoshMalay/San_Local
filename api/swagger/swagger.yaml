@@ -68,8 +68,24 @@ definitions:
     type: object
   utils.Response:
     properties:
-      message:
+      status:
+        type: integer
+      title:
         type: string
+    type: object
+  utils.ValidationError:
+    properties:
+      status:
+        example: 400
+        type: integer
+      title:
+        example: invalid request parameters
+        type: string
+      validation_errors:
+        $ref: '#/definitions/validation.Errors'
+    type: object
+  validation.Errors:
+    additionalProperties: {}
     type: object
 host: localhost:8080
 info:
@@ -199,7 +215,7 @@ paths:
       summary: Get Course By course id
       tags:
       - courses
-  /user/:
+  /user:
     get:
       consumes:
       - application/json
@@ -212,10 +228,6 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/service.GetUserInfoOutput'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/utils.Response'
         "401":
           description: Unauthorized
           schema:
@@ -226,10 +238,6 @@ paths:
             $ref: '#/definitions/utils.Response'
         "500":
           description: Internal Server Error
-          schema:
-            $ref: '#/definitions/utils.Response'
-        default:
-          description: ""
           schema:
             $ref: '#/definitions/utils.Response'
       summary: Retrieve current user data
@@ -250,12 +258,12 @@ paths:
       produces:
       - application/json
       responses:
-        "200":
-          description: OK
+        "204":
+          description: No Content
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/utils.Response'
+            $ref: '#/definitions/utils.ValidationError'
         "401":
           description: Unauthorized
           schema:
@@ -266,10 +274,6 @@ paths:
             $ref: '#/definitions/utils.Response'
         "500":
           description: Internal Server Error
-          schema:
-            $ref: '#/definitions/utils.Response'
-        default:
-          description: ""
           schema:
             $ref: '#/definitions/utils.Response'
       summary: Modify current user data

@@ -1,5 +1,7 @@
 package service
 
+//go:generate mockgen -source=$GOFILE -destination=mocks/services.go
+
 import (
 	"context"
 	"time"
