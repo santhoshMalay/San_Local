@@ -1,8 +1,10 @@
 package apiserver
 
 import (
+	"github.com/zhuravlev-pe/course-watch/internal/repository"
+	"github.com/zhuravlev-pe/course-watch/pkg/postgres"
 	"log"
-
+	
 	"github.com/zhuravlev-pe/course-watch/internal/config"
 	"github.com/zhuravlev-pe/course-watch/internal/delivery/http"
 	"github.com/zhuravlev-pe/course-watch/internal/delivery/http/v1/fake_authenticator"
@@ -33,29 +35,47 @@ func Run() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
+	
 	idGen, err := idgen.New(cfg.SnowflakeNode)
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	repos := fake_repo.New()
-
+	
+	pgConfig := postgres.NewPgConfig(
+		cfg.Postgres.User,
+		cfg.Postgres.Password,
+		cfg.Postgres.Host,
+		cfg.Postgres.Port,
+		cfg.Postgres.Database,
+	)
+	
+	pgClient, err := postgres.NewClient(pgConfig)
+	if err != nil {
+		log.Fatal(err)
+	}
+	
+	repos := &repository.Repositories{
+		Courses: fake_repo.NewCourses(),
+		Users:   repository.NewUsersRepo(pgClient),
+	}
+	
 	//jwtHandler := security.NewJwtHandler([]byte(cfg.SigningKey))
 	// TODO: first config related task - configure jwtHandler
-
+	
 	fakeBearerAuth := fake_authenticator.New() // to be able to test /user endpoints without logging in
-
+	
 	services := service.NewServices(service.Deps{
 		Repos: repos,
 		IdGen: idGen,
 	})
+	
 	handler := http.NewHandler(services, fakeBearerAuth)
-
+	
 	srv := server.NewServer(cfg, handler.Init())
-
+	
 	log.Print("Starting server")
 	if err = srv.Run(); err != nil {
+		pgClient.Close()
 		log.Fatal(err)
 	}
 }

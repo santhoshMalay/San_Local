@@ -2,7 +2,7 @@ package fake_repo
 
 import (
 	"context"
-
+	
 	"github.com/zhuravlev-pe/course-watch/internal/core"
 	"github.com/zhuravlev-pe/course-watch/internal/repository"
 )
@@ -11,7 +11,7 @@ type courses struct {
 	data map[string]*core.Course
 }
 
-func newCourses() repository.Courses {
+func NewCourses() repository.Courses {
 	return &courses{
 		data: map[string]*core.Course{},
 	}
