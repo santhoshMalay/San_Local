@@ -88,6 +88,21 @@ func (m *MockUsers) EXPECT() *MockUsersMockRecorder {
 	return m.recorder
 }
 
+// GetByEmail mocks base method.
+func (m *MockUsers) GetByEmail(ctx context.Context, email string) (*core.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetByEmail", ctx, email)
+	ret0, _ := ret[0].(*core.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetByEmail indicates an expected call of GetByEmail.
+func (mr *MockUsersMockRecorder) GetByEmail(ctx, email interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByEmail", reflect.TypeOf((*MockUsers)(nil).GetByEmail), ctx, email)
+}
+
 // GetById mocks base method.
 func (m *MockUsers) GetById(ctx context.Context, id string) (*core.User, error) {
 	m.ctrl.T.Helper()
