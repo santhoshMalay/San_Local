@@ -8,6 +8,7 @@ import (
 	"github.com/zhuravlev-pe/course-watch/pkg/security"
 	"net/http"
 	"strings"
+	"time"
 )
 
 const userKey = "user_principal"
@@ -105,6 +106,10 @@ func getUnauthorizedMessage(role security.Role) string {
 // GenerateToken creates a signed token string to be passed to the frontend in a response
 func (ba *BearerAuthenticator) GenerateToken(principal *security.UserPrincipal) (string, error) {
 	return ba.tokenHandler.Generate(principal)
+}
+
+func (ba *BearerAuthenticator) GetTokenTtl() time.Duration {
+	return ba.tokenHandler.GetTokenTtl()
 }
 
 // GetAuthenticatedUser returns the authenticated user data when called in endpoints protected by the
