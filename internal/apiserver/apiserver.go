@@ -1,18 +1,18 @@
 package apiserver
 
 import (
-	httpV1 "github.com/zhuravlev-pe/course-watch/internal/delivery/http/v1"
-	"github.com/zhuravlev-pe/course-watch/internal/delivery/http/v1/auth"
-	"github.com/zhuravlev-pe/course-watch/pkg/keygen"
-	"github.com/zhuravlev-pe/course-watch/pkg/security"
-	"log"
-
+	_ "github.com/joho/godotenv/autoload"
 	"github.com/zhuravlev-pe/course-watch/internal/config"
 	"github.com/zhuravlev-pe/course-watch/internal/delivery/http"
+	httpV1 "github.com/zhuravlev-pe/course-watch/internal/delivery/http/v1"
+	"github.com/zhuravlev-pe/course-watch/internal/delivery/http/v1/auth"
 	"github.com/zhuravlev-pe/course-watch/internal/repository/fake_repo"
 	"github.com/zhuravlev-pe/course-watch/internal/server"
 	"github.com/zhuravlev-pe/course-watch/internal/service"
 	"github.com/zhuravlev-pe/course-watch/pkg/idgen"
+	"github.com/zhuravlev-pe/course-watch/pkg/keygen"
+	"github.com/zhuravlev-pe/course-watch/pkg/security"
+	"log"
 )
 
 // @title Course Watch API
