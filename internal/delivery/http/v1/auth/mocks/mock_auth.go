@@ -6,6 +6,7 @@ package mock_auth
 
 import (
 	reflect "reflect"
+	time "time"
 
 	gomock "github.com/golang/mock/gomock"
 	security "github.com/zhuravlev-pe/course-watch/pkg/security"
@@ -47,6 +48,20 @@ func (m *MockBearerTokenHandler) Generate(principal *security.UserPrincipal) (st
 func (mr *MockBearerTokenHandlerMockRecorder) Generate(principal interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Generate", reflect.TypeOf((*MockBearerTokenHandler)(nil).Generate), principal)
+}
+
+// GetTokenTtl mocks base method.
+func (m *MockBearerTokenHandler) GetTokenTtl() time.Duration {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetTokenTtl")
+	ret0, _ := ret[0].(time.Duration)
+	return ret0
+}
+
+// GetTokenTtl indicates an expected call of GetTokenTtl.
+func (mr *MockBearerTokenHandlerMockRecorder) GetTokenTtl() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTokenTtl", reflect.TypeOf((*MockBearerTokenHandler)(nil).GetTokenTtl))
 }
 
 // Parse mocks base method.
