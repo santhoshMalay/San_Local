@@ -1,6 +1,7 @@
 package apiserver
 
 import (
+	"context"
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/zhuravlev-pe/course-watch/internal/config"
 	"github.com/zhuravlev-pe/course-watch/internal/delivery/http"
@@ -53,7 +54,10 @@ func Run() {
 		cfg.Postgres.Database,
 	)
 	
-	pgClient, err := postgres.NewClient(pgConfig)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	
+	pgClient, err := postgres.NewClient(ctx, pgConfig)
 	if err != nil {
 		log.Fatal(err)
 	}
