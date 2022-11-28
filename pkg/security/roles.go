@@ -75,3 +75,12 @@ func (r *Role) String() string {
 		return "undefined_role"
 	}
 }
+
+func ToRoles(from []uint8) []Role {
+	
+	to := make([]Role, 0, len(from))
+	for _, v := range from {
+		to = append(to, Role(v))
+	}
+	return to
+}

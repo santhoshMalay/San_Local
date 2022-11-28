@@ -1,16 +1,19 @@
 package apiserver
 
 import (
+	"context"
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/zhuravlev-pe/course-watch/internal/config"
 	"github.com/zhuravlev-pe/course-watch/internal/delivery/http"
 	httpV1 "github.com/zhuravlev-pe/course-watch/internal/delivery/http/v1"
 	"github.com/zhuravlev-pe/course-watch/internal/delivery/http/v1/auth"
+	"github.com/zhuravlev-pe/course-watch/internal/repository"
 	"github.com/zhuravlev-pe/course-watch/internal/repository/fake_repo"
 	"github.com/zhuravlev-pe/course-watch/internal/server"
 	"github.com/zhuravlev-pe/course-watch/internal/service"
 	"github.com/zhuravlev-pe/course-watch/pkg/idgen"
 	"github.com/zhuravlev-pe/course-watch/pkg/keygen"
+	"github.com/zhuravlev-pe/course-watch/pkg/postgres"
 	"github.com/zhuravlev-pe/course-watch/pkg/security"
 	"log"
 )
@@ -37,27 +40,48 @@ func Run() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
+	
 	idGen, err := idgen.New(cfg.SnowflakeNode)
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	repos := fake_repo.New()
-
+	
+	pgConfig := postgres.NewPgConfig(
+		cfg.Postgres.User,
+		cfg.Postgres.Password,
+		cfg.Postgres.Host,
+		cfg.Postgres.Port,
+		cfg.Postgres.Database,
+	)
+	
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	
+	pgClient, err := postgres.NewClient(ctx, pgConfig)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer pgClient.Close()
+	
+	repos := &repository.Repositories{
+		Courses: fake_repo.NewCourses(),
+		Users:   repository.NewUsersRepo(pgClient),
+	}
+	
 	bearerAuth, err := createAuthenticator(cfg)
 	if err != nil {
 		log.Fatal(err)
 	}
-
+	
 	services := service.NewServices(service.Deps{
 		Repos: repos,
 		IdGen: idGen,
 	})
+	
 	handler := http.NewHandler(services, bearerAuth)
-
+	
 	srv := server.NewServer(cfg, handler.Init())
-
+	
 	log.Print("Starting server")
 	if err = srv.Run(); err != nil {
 		log.Fatal(err)

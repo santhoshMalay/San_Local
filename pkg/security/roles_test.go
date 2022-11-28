@@ -254,3 +254,39 @@ func TestRole_Valid(t *testing.T) {
 		})
 	}
 }
+
+func Test_toRoles(t *testing.T) {
+	cases := []struct {
+		name string
+		from []uint8
+		exp  []Role
+	}{
+		{
+			name: "single",
+			from: []uint8{42},
+			exp:  []Role{42},
+		},
+		{
+			name: "multiple",
+			from: []uint8{0, 1, 2, 99},
+			exp:  []Role{0, 1, 2, 99},
+		},
+		{
+			name: "empty",
+			from: []uint8{},
+			exp:  []Role{},
+		},
+		{
+			name: "nil",
+			from: nil,
+			exp:  nil,
+		},
+	}
+	
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			res := ToRoles(tc.from)
+			require.ElementsMatch(t, res, tc.exp)
+		})
+	}
+}
