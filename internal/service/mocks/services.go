@@ -104,6 +104,35 @@ func (mr *MockUsersMockRecorder) GetUserInfo(ctx, id interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserInfo", reflect.TypeOf((*MockUsers)(nil).GetUserInfo), ctx, id)
 }
 
+// Login mocks base method.
+func (m *MockUsers) Login(ctx context.Context, input *service.LoginInput) (*core.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Login", ctx, input)
+	ret0, _ := ret[0].(*core.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Login indicates an expected call of Login.
+func (mr *MockUsersMockRecorder) Login(ctx, input interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Login", reflect.TypeOf((*MockUsers)(nil).Login), ctx, input)
+}
+
+// Signup mocks base method.
+func (m *MockUsers) Signup(ctx context.Context, input *service.SignupUserInput) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Signup", ctx, input)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Signup indicates an expected call of Signup.
+func (mr *MockUsersMockRecorder) Signup(ctx, input interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Signup", reflect.TypeOf((*MockUsers)(nil).Signup), ctx, input)
+}
+
 // UpdateUserInfo mocks base method.
 func (m *MockUsers) UpdateUserInfo(ctx context.Context, id string, input *service.UpdateUserInfoInput) error {
 	m.ctrl.T.Helper()

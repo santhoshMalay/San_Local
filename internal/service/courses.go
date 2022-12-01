@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+
 	"github.com/zhuravlev-pe/course-watch/internal/core"
 	"github.com/zhuravlev-pe/course-watch/internal/repository"
 	"github.com/zhuravlev-pe/course-watch/pkg/idgen"

@@ -5,6 +5,7 @@ import (
 	"time"
 
 	validation "github.com/go-ozzo/ozzo-validation/v4"
+	"github.com/go-ozzo/ozzo-validation/v4/is"
 	"github.com/zhuravlev-pe/course-watch/internal/core"
 	"github.com/zhuravlev-pe/course-watch/internal/repository"
 	"github.com/zhuravlev-pe/course-watch/pkg/idgen"
@@ -55,7 +56,19 @@ func (u *usersService) UpdateUserInfo(ctx context.Context, id string, input *Upd
 	return u.repo.Update(ctx, id, &upd)
 }
 
+func (i *SignupUserInput) Validate() error {
+	return validation.ValidateStruct(i,
+		validation.Field(&i.Email, validation.Required, is.Email),
+		validation.Field(&i.Password, validation.Required, validation.Length(8, 20)),
+		validation.Field(&i.FirstName, validation.Required),
+		validation.Field(&i.LastName, validation.Required),
+	)
+}
+
 func (u *usersService) Signup(ctx context.Context, input *SignupUserInput) error {
+	if err := input.Validate(); err != nil {
+		return err
+	}
 	user, err := u.repo.GetByEmail(ctx, input.Email)
 	if err != nil && err != repository.ErrNotFound {
 		//Any error other than ErrorNotFound should stop the Signup flow as ErrorNotFound is valid for the user Signup
