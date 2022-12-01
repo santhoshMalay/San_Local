@@ -73,7 +73,7 @@ func (h *Handler) userLogin(ctx *gin.Context) {
 	output := service.PostUserLoginOutput{
 		UserId:      up.UserId,
 		AccessToken: token,
-		ExpiresIn:   0,
+		ExpiresIn:   int(h.bearer.GetTokenTtl().Seconds()),
 	}
 	ctx.JSON(http.StatusOK, output)
 }

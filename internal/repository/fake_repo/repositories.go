@@ -10,15 +10,15 @@ import (
 
 func New() *repository.Repositories {
 	result := &repository.Repositories{
-		Courses: newCourses(),
+		Courses: NewCourses(),
 		Users:   newUsers(),
 	}
-
+	
 	err := result.Users.Insert(context.Background(), &SampleUser)
 	if err != nil {
 		panic(err)
 	}
-
+	
 	return result
 }
 

@@ -11,7 +11,7 @@ type courses struct {
 	data map[string]*core.Course
 }
 
-func newCourses() repository.Courses {
+func NewCourses() repository.Courses {
 	return &courses{
 		data: map[string]*core.Course{},
 	}

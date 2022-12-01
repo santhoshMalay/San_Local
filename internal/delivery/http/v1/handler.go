@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/zhuravlev-pe/course-watch/internal/service"
 	"github.com/zhuravlev-pe/course-watch/pkg/security"
+	"time"
 )
 
 type Handler struct {
@@ -16,6 +17,7 @@ type BearerAuthenticator interface {
 	Authenticate(ctx *gin.Context)
 	Authorize(role security.Role) func(ctx *gin.Context)
 	GenerateToken(principal *security.UserPrincipal) (string, error)
+	GetTokenTtl() time.Duration
 }
 
 func NewHandler(services *service.Services, bearer BearerAuthenticator) *Handler {
