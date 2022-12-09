@@ -49,7 +49,7 @@ func (h *Handler) signupNewUser(ctx *gin.Context) {
 // @Accept  json
 // @Produce  json
 // @Param input body service.LoginInput true "Login user details"
-// @Success 200 {object} service.LoginInput
+// @Success 200 {object} service.PostUserLoginOutput
 // @Failure 400 {object} utils.Response
 // @Router /auth/login [Post]
 func (h *Handler) userLogin(ctx *gin.Context) {
