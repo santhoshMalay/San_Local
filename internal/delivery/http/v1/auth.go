@@ -24,13 +24,13 @@ func (h *Handler) initAuthRoutes(api *gin.RouterGroup) {
 // @Accept  json
 // @Produce  json
 // @Param input body service.SignupUserInput true "New user signup details"
-// @Success 200 {object} service.SignupUserInput
-// @Failure 404,500 {object} utils.Response
+// @Success 204
+// @Failure 400     {object} utils.ValidationError
+// @Failure 500 {object} utils.Response
 // @Router /auth/signup [Post]
 func (h *Handler) signupNewUser(ctx *gin.Context) {
 	var input service.SignupUserInput
-	if err := ctx.BindJSON(&input); err != nil {
-		utils.ErrorResponseString(ctx, http.StatusBadRequest, "invalid input body")
+	if !h.parseRequestBody(ctx, &input) {
 		return
 	}
 	err := h.services.Users.Signup(ctx.Request.Context(), &input)
@@ -39,7 +39,7 @@ func (h *Handler) signupNewUser(ctx *gin.Context) {
 		h.handleServiceError(ctx, err)
 	}
 
-	ctx.Status(http.StatusOK)
+	ctx.Status(http.StatusNoContent)
 }
 
 // @Summary Authenticate user credentials
@@ -54,8 +54,7 @@ func (h *Handler) signupNewUser(ctx *gin.Context) {
 // @Router /auth/login [Post]
 func (h *Handler) userLogin(ctx *gin.Context) {
 	var input service.LoginInput
-	if err := ctx.BindJSON(&input); err != nil {
-		utils.ErrorResponseString(ctx, http.StatusBadRequest, "invalid input body")
+	if !h.parseRequestBody(ctx, &input) {
 		return
 	}
 	result, err := h.services.Users.Login(ctx.Request.Context(), &input)

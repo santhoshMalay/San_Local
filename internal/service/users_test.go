@@ -220,14 +220,12 @@ func TestUsersService_UpdateUserInfo(t *testing.T) {
 
 func TestUsersService_Signup(t *testing.T) {
 	cases := map[string]struct {
-		email string
 		input *SignupUserInput
 		// setupMocks func(context.Context, *repoMocks.MockUsers, *serviceMocks.MockIdGen)
 		setupMocks func(context.Context, *repoMocks.MockUsers)
 		checkError func(*testing.T, error)
 	}{
 		"success": {
-			email: "JognDoe@example.com",
 			input: &SignupUserInput{
 				Email:       "JognDoe@example.com",
 				Password:    "John*123#",
@@ -243,7 +241,6 @@ func TestUsersService_Signup(t *testing.T) {
 			checkError: noError,
 		},
 		"user_already_exist": {
-			email: "JognDoe@example.com",
 			input: &SignupUserInput{
 				Email:       "JognDoe@example.com",
 				Password:    "John*123#",
@@ -254,21 +251,20 @@ func TestUsersService_Signup(t *testing.T) {
 			setupMocks: func(ctx context.Context, mockUsers *repoMocks.MockUsers) {
 				u := &core.User{
 					Id:               "1111111",
-					Email:            "doe.h@example.com",
+					Email:            "JognDoe@example.com",
 					FirstName:        "John",
 					LastName:         "Doe",
 					DisplayName:      "JohnnyD",
 					RegistrationDate: someDate,
 					Roles:            []security.Role{security.Student},
 				}
-				mockUsers.EXPECT().GetByEmail(ctx, "JognDoe@example.com").Return(u, ErrUserAlreadyExist).Times(1)
+				mockUsers.EXPECT().GetByEmail(ctx, "JognDoe@example.com").Return(u, nil).Times(1)
 			},
 			checkError: func(t *testing.T, err error) {
 				assert.ErrorIs(t, err, ErrUserAlreadyExist)
 			},
 		},
 		"db_error_on_insert": {
-			email: "JognDoe@example.com",
 			input: &SignupUserInput{
 				Email:       "JognDoe@example.com",
 				Password:    "John*123#",
@@ -294,7 +290,6 @@ func TestUsersService_Signup(t *testing.T) {
 			},
 		},
 		"validation_firstName_required": {
-			email: "JognDoe@example.com",
 			input: &SignupUserInput{
 				Email:       "JognDoe@example.com",
 				Password:    "John*123#",
@@ -313,7 +308,6 @@ func TestUsersService_Signup(t *testing.T) {
 			},
 		},
 		"validation_lastName_required": {
-			email: "JognDoe@example.com",
 			input: &SignupUserInput{
 				Email:       "JognDoe@example.com",
 				Password:    "John*123#",
@@ -332,7 +326,6 @@ func TestUsersService_Signup(t *testing.T) {
 			},
 		},
 		"validation_weak_password": {
-			email: "JognDoe@example.com",
 			input: &SignupUserInput{
 				Email:       "JognDoe@example.com",
 				Password:    "pw*123",
@@ -347,6 +340,24 @@ func TestUsersService_Signup(t *testing.T) {
 				require.True(t, ok)
 				assert.Equal(t, 1, len(errs))
 				_, ok = errs["password"]
+				assert.True(t, ok)
+			},
+		},
+		"validation_invalid_email": {
+			input: &SignupUserInput{
+				Email:       "JognDoe@example",
+				Password:    "John*123#",
+				FirstName:   "John",
+				LastName:    "Doe",
+				DisplayName: "JohnnyD",
+			},
+			setupMocks: func(ctx context.Context, mockUsers *repoMocks.MockUsers) {},
+			checkError: func(t *testing.T, err error) {
+				var errs validation.Errors
+				ok := errors.As(err, &errs)
+				require.True(t, ok)
+				assert.Equal(t, 1, len(errs))
+				_, ok = errs["email"]
 				assert.True(t, ok)
 			},
 		},
@@ -371,13 +382,13 @@ func TestUsersService_Signup(t *testing.T) {
 
 func TestUsersService_Login(t *testing.T) {
 	cases := map[string]struct {
-		email      string
+		// email      string
 		input      *LoginInput
 		setupMocks func(context.Context, *repoMocks.MockUsers)
 		checkError func(*testing.T, error)
 	}{
 		"success": {
-			email: "JognDoe@example.com",
+			// email: "JognDoe@example.com",
 			input: &LoginInput{
 				Email:      "JognDoe@example.com",
 				Password:   password,
@@ -399,14 +410,15 @@ func TestUsersService_Login(t *testing.T) {
 			},
 			checkError: noError,
 		},
-		"invalid_credentials": {
-			email: "JognDoe@example.com",
+		"invalid_password": {
+			// email: "JognDoe@example.com",
 			input: &LoginInput{
 				Email:      "JognDoe@example.com",
 				Password:   password,
 				Persistent: true,
 			},
 			setupMocks: func(ctx context.Context, mockUsers *repoMocks.MockUsers) {
+				hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(password+"qwerty"), bcrypt.DefaultCost)
 				loggedUser := &core.User{
 					Id:               "1111111",
 					Email:            "doe.h@example.com",
@@ -414,17 +426,17 @@ func TestUsersService_Login(t *testing.T) {
 					LastName:         "Doe",
 					DisplayName:      "JohnnyD",
 					RegistrationDate: someDate,
-					HashedPassword:   []byte(password),
+					HashedPassword:   hashedPassword,
 					Roles:            []security.Role{security.Student},
 				}
-				mockUsers.EXPECT().GetByEmail(ctx, "JognDoe@example.com").Return(loggedUser, ErrInvalidCredentials).Times(1)
+				mockUsers.EXPECT().GetByEmail(ctx, "JognDoe@example.com").Return(loggedUser, nil).Times(1)
 			},
 			checkError: func(t *testing.T, err error) {
 				assert.ErrorIs(t, err, ErrInvalidCredentials)
 			},
 		},
 		"invalid_credentials_no_user": {
-			email: "JognDoe@example.com",
+			// email: "JognDoe@example.com",
 			input: &LoginInput{
 				Email:      "JognDoe@example.com",
 				Password:   password,
@@ -438,7 +450,7 @@ func TestUsersService_Login(t *testing.T) {
 			},
 		},
 		"db_error_on_select": {
-			email: "JognDoe@example.com",
+			// email: "JognDoe@example.com",
 			input: &LoginInput{
 				Email:      "JognDoe@example.com",
 				Password:   password,
